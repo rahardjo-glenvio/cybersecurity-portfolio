@@ -1,6 +1,12 @@
-# Cybersecurity Labs
+# Cybersecurity Labs 🔐
 
-This repository contains a collection of hands-on cybersecurity labs
-focused on service security, availability, and basic mitigation techniques.
+My security tools and practice labs.
 
-Each lab is documented separately and conducted in a controlled environment.
+## What's Here
+
+**Tools** - Security utilities I built  
+**Labs** - Hands-on practice projects
+
+---
+
+Glen Rahardjo | SMK Telkom Purwokerto
