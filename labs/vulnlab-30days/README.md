@@ -155,7 +155,7 @@ python3 app.py
 
 ### HTTPS Setup (Optional)
 
-See [vulnlab-30days/config/nginx/nginx-securebank.conf](vulnlab-30days/config/nginx/nginx-securebank.conf) for Nginx configuration with SSL/TLS.
+See [config/nginx-securebank.conf](config/nginx-securebank.conf) for Nginx configuration with SSL/TLS.
 
 ---
 
