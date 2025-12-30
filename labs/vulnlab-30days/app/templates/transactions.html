@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction History - SecureBank{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <h2>📜 Transaction History</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">💸 Money Sent</h5>
+            </div>
+            <div class="card-body">
+                {% if sent %}
+                <div class="list-group">
+                    {% for tx in sent %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span><strong>To:</strong> User #{{ tx.recipient_id }}</span>
+                            <span class="text-danger">-${{ "%.2f"|format(tx.amount) }}</span>
+                        </div>
+                        <small class="text-muted">{{ tx.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        {% if tx.description %}
+                        <br><small>{{ tx.description }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No outgoing transactions</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">💰 Money Received</h5>
+            </div>
+            <div class="card-body">
+                {% if received %}
+                <div class="list-group">
+                    {% for tx in received %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span><strong>From:</strong> User #{{ tx.sender_id }}</span>
+                            <span class="text-success">+${{ "%.2f"|format(tx.amount) }}</span>
+                        </div>
+                        <small class="text-muted">{{ tx.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        {% if tx.description %}
+                        <br><small>{{ tx.description }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No incoming transactions</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-12">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

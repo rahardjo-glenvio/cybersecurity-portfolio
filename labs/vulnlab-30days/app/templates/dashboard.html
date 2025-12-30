@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SecureBank{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <h2>Welcome to Your Dashboard, {{ user.username }}!</h2>
+        <hr>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">💰 Account Balance</h5>
+                <h2 class="mb-0">${{ "%.2f"|format(user.balance) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">👤 Account Type</h5>
+                <h4 class="mb-0">
+                    {% if user.is_admin %}
+                        Administrator
+                    {% else %}
+                        Standard User
+                    {% endif %}
+                </h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">📅 Member Since</h5>
+                <h5 class="mb-0">{{ user.created_at.strftime('%B %d, %Y') }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📊 Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('transfer') }}" class="btn btn-primary w-100">
+                            <h5>💸</h5>
+                            Transfer Money<br>
+                            <small>Send to other users</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('transactions') }}" class="btn btn-primary w-100">
+                            <h5>📜</h5>
+                            Transaction History<br>
+                            <small>View all transfers</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-primary w-100" disabled>
+                            <h5>⚙️</h5>
+                            Profile Settings<br>
+                            <small>(Coming Soon)</small>
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-primary w-100" disabled>
+                            <h5>📞</h5>
+                            Support<br>
+                            <small>(Coming Soon)</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="alert alert-warning">
+            <strong>⚠️ Security Notice:</strong> This is a deliberately vulnerable banking application for educational purposes. 
+            Never use these practices in production!
+        </div>
+    </div>
+</div>
+{% endblock %}

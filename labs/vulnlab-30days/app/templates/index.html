@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}SecureBank - Home{% endblock %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4">Welcome to SecureBank</h1>
+        <p class="lead">Your trusted partner in digital banking</p>
+        <hr class="my-4">
+        <p>Experience secure and convenient banking services from anywhere, anytime.</p>
+        <div class="mt-4">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-2">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>💳</h3>
+                <h5 class="card-title">Account Management</h5>
+                <p class="card-text">Manage your accounts and view balance in real-time.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>💸</h3>
+                <h5 class="card-title">Money Transfer</h5>
+                <p class="card-text">Transfer money securely to other SecureBank users.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>📊</h3>
+                <h5 class="card-title">Transaction History</h5>
+                <p class="card-text">Track all your transactions and account activities.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
