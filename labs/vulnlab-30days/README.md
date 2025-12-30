@@ -312,26 +312,6 @@ Through this project, I gained hands-on experience in:
 - [ ] Final project documentation
 
 ---
-
-## 🖼️ Screenshots
-
-### Homepage
-![Homepage](screenshots/01-homepage.png)
-
-### Login Interface
-![Login](screenshots/02-login.png)
-
-### Dashboard
-![Dashboard](screenshots/03-dashboard.png)
-
-### SQL Injection Exploit
-![SQLi Exploit](screenshots/04-sqli-exploit.png)
-
-### SQLMap Results
-![SQLMap](screenshots/05-sqlmap-results.png)
-
-*More screenshots available in [screenshots/](screenshots/) directory*
-
 ---
 
 ## ⚠️ Legal Disclaimer
@@ -394,14 +374,6 @@ Computer Network & Telecommunications Engineering (TJKT)
 This project is licensed for educational purposes only. Commercial use, redistribution, or deployment in production environments is strictly prohibited.
 
 ---
-
-## 🔗 Related Links
-
-- **Main Portfolio:** [cybersecurity-portfolio](../../)
-- **GitHub Profile:** [@rahardjo-glenvio](https://github.com/rahardjo-glenvio)
-- **LinkedIn:** [Your LinkedIn Profile]
-- **Project URL:** https://github.com/rahardjo-glenvio/cybersecurity-portfolio
-
 ---
 
 <p align="center">
