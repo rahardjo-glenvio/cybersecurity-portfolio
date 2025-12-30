@@ -64,7 +64,7 @@ SecureBank provides a complete online banking experience:
 | **ORM** | SQLAlchemy | 3.1.1 |
 | **Frontend** | Bootstrap | 5.3.0 |
 | **Web Server** | Nginx | 1.24.0 |
-| **Operating System** | Ubuntu Server | 22.04 LTS |
+| **Operating System** | Ubuntu Server | 24.04 LTS |
 | **Language** | Python | 3.12.3 |
 | **Protocol** | HTTPS | TLS 1.2/1.3 |
 
@@ -120,7 +120,7 @@ SecureBank intentionally implements the following security flaws for educational
 
 ### Prerequisites
 
-- Ubuntu Server 24.04+
+- Ubuntu Server 24.04
 - Python 3.10+
 - Nginx
 - Git
