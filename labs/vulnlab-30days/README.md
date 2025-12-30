@@ -120,7 +120,7 @@ SecureBank intentionally implements the following security flaws for educational
 
 ### Prerequisites
 
-- Ubuntu Server 22.04+
+- Ubuntu Server 24.04
 - Python 3.10+
 - Nginx
 - Git
