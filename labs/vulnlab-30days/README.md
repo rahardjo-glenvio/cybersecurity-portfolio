@@ -155,7 +155,7 @@ python3 app.py
 
 ### HTTPS Setup (Optional)
 
-See [config/nginx/](config/nginx/) for Nginx configuration with SSL/TLS.
+See [config/nginx/nginx-securebank.conf](config/nginx/nginx-securebank.conf) for Nginx configuration with SSL/TLS.
 
 ---
 
