@@ -10,3 +10,5 @@ My security tools and practice labs.
 ---
 
 Glenvio Rahardjo | SMK Telkom Purwokerto
+
+## 2026 Updates
