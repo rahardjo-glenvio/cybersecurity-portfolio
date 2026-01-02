@@ -44,3 +44,34 @@ body {
 .card.shadow {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
+
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+a.text-decoration-none {
+    color: inherit;
+}
+/* Form Labels - White on blue background */
+.balance-display .form-label-custom,
+.balance-display label {
+    color: white !important;
+    font-weight: 600;
+}
+
+.balance-display .form-label-custom i {
+    color: white !important;
+}
+
+.balance-display .input-hint {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.balance-display small {
+    color: rgba(255, 255, 255, 0.9) !important;
+}

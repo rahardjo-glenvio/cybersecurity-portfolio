@@ -1,95 +1,327 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - SecureBank{% endblock %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: 3rem 0;
+    }
+    
+    .welcome-section {
+        margin-bottom: 2rem;
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-subtitle {
+        color: var(--gray-600);
+        font-size: 1rem;
+    }
+    
+    /* Balance Cards */
+    .balance-card {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        box-shadow: 0 8px 24px rgba(28, 77, 141, 0.25);
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .balance-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .balance-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(28, 77, 141, 0.35);
+    }
+    
+    .balance-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .balance-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .balance-icon {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+    
+    /* Quick Action Cards */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.75rem;
+        color: var(--primary);
+    }
+    
+    .action-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(15, 40, 84, 0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 200px;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(15, 40, 84, 0.15);
+        color: inherit;
+    }
+    
+    .action-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.25rem;
+        font-size: 2rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .action-card:hover .action-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .action-title {
+        font-weight: 700;
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-dark);
+    }
+    
+    .action-desc {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        margin-bottom: 0;
+    }
+    
+    /* Security Notice */
+    .security-notice {
+        background: white;
+        border-left: 4px solid var(--warning);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(15, 40, 84, 0.08);
+        margin-top: 2rem;
+    }
+    
+    .security-notice-icon {
+        font-size: 2.5rem;
+        color: var(--warning);
+    }
+    
+    /* Quick Stats */
+    .quick-stat {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 8px rgba(15, 40, 84, 0.06);
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, rgba(28, 77, 141, 0.1) 0%, rgba(73, 136, 196, 0.1) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mt-4">
-    <div class="col-md-12">
-        <h2>Welcome to Your Dashboard, {{ user.username }}!</h2>
-        <hr>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">💰 Account Balance</h5>
-                <h2 class="mb-0">${{ "%.2f"|format(user.balance) }}</h2>
-            </div>
+<div class="dashboard-container">
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">
+                <i class="bi bi-speedometer2"></i> Welcome back, {{ user.username }}!
+            </h1>
+            <p class="welcome-subtitle">
+                <i class="bi bi-calendar-check"></i> {{ user.created_at.strftime('%A, %B %d, %Y') }}
+            </p>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <h5 class="card-title">👤 Account Type</h5>
-                <h4 class="mb-0">
-                    {% if user.is_admin %}
-                        Administrator
-                    {% else %}
-                        Standard User
-                    {% endif %}
-                </h4>
+        
+        <!-- Balance Cards -->
+        <div class="row g-4 mb-5">
+            <!-- Total Balance -->
+            <div class="col-lg-4 col-md-6">
+                <div class="balance-card">
+                    <i class="bi bi-wallet2 balance-icon"></i>
+                    <div class="balance-label">
+                        <i class="bi bi-cash-stack"></i> Account Balance
+                    </div>
+                    <h2 class="balance-value">${{ "%.2f"|format(user.balance) }}</h2>
+                    <small class="opacity-75">
+                        <i class="bi bi-graph-up"></i> Available for transactions
+                    </small>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">📅 Member Since</h5>
-                <h5 class="mb-0">{{ user.created_at.strftime('%B %d, %Y') }}</h5>
+            
+            <!-- Account Type -->
+            <div class="col-lg-4 col-md-6">
+                <div class="balance-card" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);">
+                    <i class="bi bi-person-badge balance-icon"></i>
+                    <div class="balance-label">
+                        <i class="bi bi-star"></i> Account Type
+                    </div>
+                    <h2 class="balance-value">{{ user.account_type }}</h2>
+                    <small class="opacity-75">
+                        <i class="bi bi-shield-check"></i> Premium features enabled
+                    </small>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">📊 Quick Actions</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <a href="{{ url_for('transfer') }}" class="btn btn-primary w-100">
-                            <h5>💸</h5>
-                            Transfer Money<br>
-                            <small>Send to other users</small>
-                        </a>
+            
+            <!-- Member Since -->
+            <div class="col-lg-4 col-md-12">
+                <div class="balance-card" style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);">
+                    <i class="bi bi-calendar-event balance-icon"></i>
+                    <div class="balance-label">
+                        <i class="bi bi-clock-history"></i> Member Since
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <a href="{{ url_for('transactions') }}" class="btn btn-primary w-100">
-                            <h5>📜</h5>
-                            Transaction History<br>
-                            <small>View all transfers</small>
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <button class="btn btn-outline-primary w-100" disabled>
-                            <h5>⚙️</h5>
-                            Profile Settings<br>
-                            <small>(Coming Soon)</small>
-                        </button>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <button class="btn btn-outline-primary w-100" disabled>
-                            <h5>📞</h5>
-                            Support<br>
-                            <small>(Coming Soon)</small>
-                        </button>
-                    </div>
+                    <h2 class="balance-value">{{ user.created_at.strftime('%b %d, %Y') }}</h2>
+                    <small class="opacity-75">
+                        <i class="bi bi-trophy"></i> Trusted customer
+                    </small>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="alert alert-warning">
-            <strong>⚠️ Security Notice:</strong> This is a deliberately vulnerable banking application for educational purposes. 
-            Never use these practices in production!
+        
+        <!-- Quick Actions -->
+        <div class="mb-4">
+            <h3 class="section-title">
+                <i class="bi bi-lightning-charge-fill"></i> Quick Actions
+            </h3>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <!-- Transfer Money -->
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="{{ url_for('transfer') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <h5 class="action-title">Transfer Money</h5>
+                    <p class="action-desc">Send money to other users</p>
+                </a>
+            </div>
+            
+            <!-- Transaction History -->
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="{{ url_for('transactions') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h5 class="action-title">Transaction History</h5>
+                    <p class="action-desc">View all your transfers</p>
+                </a>
+            </div>
+            
+            <!-- Profile Settings -->
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="{{ url_for('profile') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-gear-fill"></i>
+                    </div>
+                    <h5 class="action-title">Profile Settings</h5>
+                    <p class="action-desc">Manage your account</p>
+                </a>
+            </div>
+            
+            <!-- Support -->
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <a href="{{ url_for('support') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <h5 class="action-title">Customer Support</h5>
+                    <p class="action-desc">Get help and assistance</p>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Security Notice -->
+        <div class="security-notice">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <i class="bi bi-shield-exclamation security-notice-icon"></i>
+                </div>
+                <div class="col">
+                    <h5 class="fw-bold mb-2" style="color: var(--primary-dark);">
+                        <i class="bi bi-info-circle-fill"></i> Educational Security Notice
+                    </h5>
+                    <p class="mb-0 text-muted">
+                        This is a deliberately vulnerable banking application for cybersecurity education and penetration testing practice. 
+                        <strong>Never use in production</strong> or with real credentials. This platform contains 10+ intentional vulnerabilities for learning purposes.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
