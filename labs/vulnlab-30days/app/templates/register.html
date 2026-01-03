@@ -1,258 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Register{% endblock %}
-
-{% block extra_css %}
-<style>
-    .register-container {
-        min-height: 80vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 3rem 0;
-    }
-    
-    .register-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(15, 40, 84, 0.12);
-        padding: 3rem;
-        max-width: 550px;
-        width: 100%;
-    }
-    
-    .register-header {
-        text-align: center;
-        margin-bottom: 2.5rem;
-    }
-    
-    .register-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 2.5rem;
-        color: white;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-control-modern {
-        border: 2px solid var(--gray-200);
-        border-radius: 12px;
-        padding: 14px 18px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control-modern:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(28, 77, 141, 0.1);
-    }
-    
-    .input-icon {
-        position: relative;
-    }
-    
-    .input-icon i {
-        position: absolute;
-        left: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--gray-600);
-        font-size: 1.2rem;
-    }
-    
-    .input-icon input {
-        padding-left: 50px;
-    }
-    
-    .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 2rem 0;
-    }
-    
-    .divider::before,
-    .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--gray-200);
-    }
-    
-    .divider span {
-        padding: 0 1rem;
-        color: var(--gray-600);
-        font-size: 0.875rem;
-    }
-    
-    .info-box {
-        background: linear-gradient(135deg, rgba(189, 232, 245, 0.3) 0%, rgba(73, 136, 196, 0.1) 100%);
-        border-left: 4px solid var(--info);
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1.5rem;
-    }
-    
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .feature-list li {
-        padding: 0.5rem 0;
-        color: var(--gray-600);
-        font-size: 0.875rem;
-    }
-    
-    .feature-list i {
-        color: var(--success);
-        margin-right: 0.5rem;
-    }
-</style>
-{% endblock %}
+{% block title %}Register - SecureBank{% endblock %}
 
 {% block content %}
-<div class="register-container">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-6 col-md-8">
-                <div class="register-card">
-                    <!-- Header -->
-                    <div class="register-header">
-                        <div class="register-icon">
-                            <i class="bi bi-person-plus-fill"></i>
-                        </div>
-                        <h2 class="fw-bold mb-2" style="color: var(--primary-dark);">Create Account</h2>
-                        <p class="text-muted mb-0">Join SecureBank and start your cybersecurity journey</p>
+<div class="row mt-5">
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">📝 Create Account</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <small class="form-text text-muted">Choose a unique username</small>
                     </div>
-                    
-                    <!-- Registration Form -->
-                    <form method="POST" action="{{ url_for('register') }}">
-                        <div class="form-group">
-                            <label class="form-label fw-semibold" style="color: var(--gray-800);">
-                                <i class="bi bi-person-fill me-1"></i> Username
-                            </label>
-                            <div class="input-icon">
-                                <i class="bi bi-person"></i>
-                                <input 
-                                    type="text" 
-                                    name="username" 
-                                    class="form-control form-control-modern" 
-                                    placeholder="Choose a username"
-                                    required
-                                    autocomplete="username"
-                                    autofocus
-                                >
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-info-circle"></i> Will be used to login
-                            </small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label fw-semibold" style="color: var(--gray-800);">
-                                <i class="bi bi-envelope-fill me-1"></i> Email Address
-                            </label>
-                            <div class="input-icon">
-                                <i class="bi bi-envelope"></i>
-                                <input 
-                                    type="email" 
-                                    name="email" 
-                                    class="form-control form-control-modern" 
-                                    placeholder="your.email@example.com"
-                                    required
-                                    autocomplete="email"
-                                >
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-info-circle"></i> For account recovery
-                            </small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label fw-semibold" style="color: var(--gray-800);">
-                                <i class="bi bi-key-fill me-1"></i> Password
-                            </label>
-                            <div class="input-icon">
-                                <i class="bi bi-lock"></i>
-                                <input 
-                                    type="password" 
-                                    name="password" 
-                                    class="form-control form-control-modern" 
-                                    placeholder="Create a password"
-                                    required
-                                    autocomplete="new-password"
-                                >
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-shield-exclamation"></i> 
-                                <span class="text-warning">Vulnerability: No password strength check!</span>
-                            </small>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary-custom w-100 py-3 mt-3">
-                            <i class="bi bi-check-circle"></i> Create SecureBank Account
-                        </button>
-                    </form>
-                    
-                    <!-- Divider -->
-                    <div class="divider">
-                        <span>Already have an account?</span>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
                     </div>
-                    
-                    <!-- Login Link -->
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-custom w-100 py-3">
-                        <i class="bi bi-box-arrow-in-right"></i> Login to Existing Account
-                    </a>
-                    
-                    <!-- Info Box -->
-                    <div class="info-box">
-                        <div class="d-flex align-items-start">
-                            <i class="bi bi-gift-fill me-2 mt-1" style="color: var(--info); font-size: 1.5rem;"></i>
-                            <div>
-                                <h6 class="fw-bold mb-2" style="color: var(--primary-dark);">
-                                    Welcome Bonus!
-                                </h6>
-                                <ul class="feature-list">
-                                    <li>
-                                        <i class="bi bi-check-circle-fill"></i>
-                                        Starting balance: <strong>$10,000</strong>
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-check-circle-fill"></i>
-                                        Full access to all features
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-check-circle-fill"></i>
-                                        Practice all 10+ vulnerabilities
-                                    </li>
-                                    <li>
-                                        <i class="bi bi-check-circle-fill"></i>
-                                        Unlimited transactions for testing
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <small class="form-text text-muted">Use a strong password</small>
                     </div>
-                </div>
-                
-                <!-- Additional Info -->
-                <div class="text-center mt-4">
-                    <p class="text-muted small mb-2">
-                        <i class="bi bi-exclamation-triangle"></i> For educational purposes only
-                    </p>
-                    <p class="text-muted small mb-0">
-                        <i class="bi bi-shield-check"></i> Never use real credentials or sensitive data
-                    </p>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+                <hr>
+                <p class="text-center mb-0">
+                    Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+                </p>
+                <div class="mt-3 alert alert-success">
+                    <small>
+                        <strong>Registration Bonus:</strong><br>
+                        New accounts start with $10,000 balance!
+                    </small>
                 </div>
             </div>
         </div>

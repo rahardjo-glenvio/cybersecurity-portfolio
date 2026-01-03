@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from database import db, User, Transaction, SupportTicket
+from database import db, User, Transaction
 import os
 
 app = Flask(__name__)
@@ -12,6 +12,12 @@ db.init_app(app)
 # Create database tables
 with app.app_context():
     db.create_all()
+    # Create admin user if not exists
+    admin = User.query.filter_by(username='admin').first()
+    if not admin:
+        admin = User(username='admin', password='admin123', email='admin@securebank.com', balance=1000000.0, is_admin=True)
+        db.session.add(admin)
+        db.session.commit()
 
 @app.route('/')
 def index():
@@ -86,54 +92,48 @@ def logout():
 @app.route('/transfer', methods=['GET', 'POST'])
 def transfer():
     if 'user_id' not in session:
+        flash('Please login first!', 'warning')
         return redirect(url_for('login'))
     
-    # Get current user object
-    user = User.query.get(session['user_id'])
-    
     if request.method == 'POST':
-        to_username = request.form['to_username']
-        amount = float(request.form['amount'])
-        description = request.form.get('description', '')
+        to_username = request.form.get('to_username')
+        amount = request.form.get('amount')
+        description = request.form.get('description', 'Transfer')
         
-        # Get sender and recipient
-        sender = User.query.get(session['user_id'])
-        recipient = User.query.filter_by(username=to_username).first()
+        # VULNERABILITY: SQL Injection in transfer query
+        query = f"SELECT * FROM user WHERE username = '{to_username}'"
+        recipient = db.session.execute(db.text(query)).first()
         
         if not recipient:
             flash('Recipient not found!', 'danger')
             return redirect(url_for('transfer'))
         
-        if sender.balance < amount:
-            flash('Insufficient balance!', 'danger')
-            return redirect(url_for('transfer'))
+        sender = User.query.get(session['user_id'])
+        recipient_user = User.query.get(recipient[0])
         
-        # Perform transfer
-        sender.balance -= amount
-        recipient.balance += amount
+        # VULNERABILITY: No balance check!
+        # VULNERABILITY: No amount validation (bisa negative!)
+        transfer_amount = float(amount)
         
-        # Create transaction record
+        sender.balance -= transfer_amount
+        recipient_user.balance += transfer_amount
+        
+        # Log transaction (vulnerable - no validation)
         transaction = Transaction(
             sender_id=sender.id,
-            recipient_id=recipient.id,
-            amount=amount,
+            recipient_id=recipient_user.id,
+            amount=transfer_amount,
             description=description
         )
-        
         db.session.add(transaction)
         db.session.commit()
         
-        # Update session balance
-        session['balance'] = sender.balance
-        
-        flash(f'Successfully transferred ${amount:.2f} to {to_username}!', 'success')
+        flash(f'Successfully transferred ${transfer_amount} to {to_username}!', 'success')
         return redirect(url_for('dashboard'))
     
-    # Get all users except current user
+    # Get all users for selection
     users = User.query.filter(User.id != session['user_id']).all()
-    
-    return render_template('transfer.html', users=users, user=user)
-    #                                                      ^^^^^^^^ ADD THIS!
+    return render_template('transfer.html', users=users)
 
 @app.route('/transactions')
 def transactions():
@@ -149,87 +149,6 @@ def transactions():
     
     return render_template('transactions.html', sent=sent, received=received)
 
-# Profile Settings Route
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    user = User.query.get(session['user_id'])
-    
-    if request.method == 'POST':
-        action = request.form.get('action')
-        
-        if action == 'change_password':
-            current_password = request.form.get('current_password')
-            new_password = request.form.get('new_password')
-            confirm_password = request.form.get('confirm_password')
-            
-            # Vulnerability: Plain text password comparison (intentional!)
-            if user.password != current_password:
-                flash('Current password is incorrect!', 'error')
-            elif new_password != confirm_password:
-                flash('New passwords do not match!', 'error')
-            elif len(new_password) < 4:
-                flash('Password must be at least 4 characters!', 'error')
-            else:
-                # Vulnerability: Store plain text password (intentional!)
-                user.password = new_password
-                db.session.commit()
-                flash('Password changed successfully!', 'success')
-        
-        elif action == 'update_email':
-            new_email = request.form.get('email')
-            
-            # Vulnerability: No email validation (intentional!)
-            user.email = new_email
-            db.session.commit()
-            flash('Email updated successfully!', 'success')
-    
-    return render_template('profile.html', user=user)
-
-
-# Support Route
-@app.route('/support', methods=['GET', 'POST'])
-def support():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        subject = request.form.get('subject')
-        message = request.form.get('message')
-        
-        # Vulnerability: No input sanitization (XSS possible!)
-        ticket = SupportTicket(
-            user_id=session['user_id'],
-            subject=subject,
-            message=message
-        )
-        db.session.add(ticket)
-        db.session.commit()
-        
-        flash('Support ticket submitted successfully!', 'success')
-        return redirect(url_for('support'))
-    
-    # Get user's tickets
-    tickets = SupportTicket.query.filter_by(
-        user_id=session['user_id']
-    ).order_by(SupportTicket.created_at.desc()).all()
-    
-    return render_template('support.html', tickets=tickets)
-
-
-# View Support Ticket
-@app.route('/ticket/<int:ticket_id>')
-def view_ticket(ticket_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    # Vulnerability: IDOR - No authorization check! (intentional!)
-    ticket = SupportTicket.query.get_or_404(ticket_id)
-    
-    return render_template('ticket_detail.html', ticket=ticket)
-
 if __name__ == '__main__':
     # Only bind to localhost - not accessible from outside
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
