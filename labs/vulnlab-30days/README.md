@@ -39,7 +39,7 @@ SecureBank simulates a realistic online banking platform with complete transacti
 | SQL Injection | Critical | 9.3 | **Documented** |
 | Cross-Site Scripting (XSS) | High | 7.1 | **Documented** |
 | Plain Text Password Storage | Critical | 9.8 | Pending |
-| Insecure Direct Object Reference (IDOR) | High | 8.1 | Pending |
+| Insecure Direct Object Reference (IDOR) | High | 8.1 | **Documented** |
 | Cross-Site Request Forgery (CSRF) | High | 8.1 | Pending |
 | Broken Authentication | High | 8.5 | Pending |
 | Input Validation Failures | High | 7.8 | Pending |
