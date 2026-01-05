@@ -105,7 +105,7 @@ Result: Session hijacking when admin views ticket
 Result: Cookie exposure in victim browser
 ```
 
-### IDOR (In Progress)
+### IDOR (VULN-003)
 
 **Unauthorized Resource Access:**
 ```
