@@ -247,8 +247,3 @@ whoami && hostname
 Seluruh aktivitas dalam modul ini dilakukan pada sistem milik sendiri dalam lab terisolasi. **Brute force attack terhadap sistem tanpa izin adalah tindakan ilegal.** Gunakan pengetahuan ini hanya untuk defensive security dan ethical hacking yang terotorisasi.
 
 ---
-
-## 🔗 Navigasi Modul
-
-- [← Modul 1 — Defense in Depth](../Modul1-Defense-in-Depth/)
-- [→ Modul 3 — Wazuh SIEM Integration](../Modul3-Wazuh-SIEM/)
