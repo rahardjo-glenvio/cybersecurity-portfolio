@@ -1,10 +1,10 @@
 # ⚡ ReconForge
 
-Automated reconnaissance framework untuk pentesting — **passive + active** dalam satu pipeline.
+Automated reconnaissance framework for pentesting — **passive + active** in a single pipeline.
 
-## Bukti Eksekusi (target: hackerone.com)
+## Execution Proof (target: hackerone.com)
 
-```
+```bash
 === PHASE 1: PASSIVE RECON [hackerone.com] ===
 [passive] whois lookup
 [passive] DNS records (A/AAAA/MX/NS/TXT/SOA/CNAME)
@@ -15,27 +15,27 @@ Automated reconnaissance framework untuk pentesting — **passive + active** dal
 [passive] total unique subdomains: 25
 
 === PHASE 2: ACTIVE RECON [hackerone.com] ===
-[active] DNS bruteforce: 232 kandidat → 4 hidup
+[active] DNS bruteforce: 232 candidates → 4 alive
 [active] DNS resolve all: 12/25 resolved
 [active] HTTP/HTTPS alive probe: 12/12 alive
 [active] port scan top 12 hosts × 25 ports
 [active] vuln heuristics on 12 live hosts
 [active] total findings: 45
 
-→ Total runtime: ~45 detik
+→ Total runtime: ~45 seconds
 ```
 
-**Real attack surface ditemukan:**
+**Real attack surface discovered:**
 - `api.hackerone.com` → 200 OK behind Cloudflare (API endpoint)
 - `mta-sts.*.hackerone.com` → CNAME `hacker0x01.github.io` (GitHub Pages takeover candidate)
 - `support.hackerone.com` → Freshdesk (3rd-party SaaS dependency)
 - `gslink.hackerone.com` → CloudFront
-- `pmbounces.hackerone.com` → Postmark email infra
+- `pmbounces.hackerone.com` → Postmark email infrastructure
 - Missing security headers per host
 
-## Arsitektur
+## Architecture
 
-```
+```text
 reconforge/
 ├── core/
 │   ├── orchestrator.py    # pipeline runner (passive → active)
@@ -66,25 +66,25 @@ reconforge/
 └── templates/report.html.j2  # cyber minimalist theme (#0066ff)
 ```
 
-\* = butuh API key (set env var: `SHODAN_API_KEY`, `SECURITYTRAILS_KEY`, `VIRUSTOTAL_KEY`, `GITHUB_TOKEN`)
+\* = requires API key (set env var: `SHODAN_API_KEY`, `SECURITYTRAILS_KEY`, `VIRUSTOTAL_KEY`, `GITHUB_TOKEN`)
 
-## Klasifikasi Subdomain Otomatis
+## Automatic Subdomain Classification
 
-Tiap subdomain di-tag dengan kondisi:
+Each subdomain is automatically tagged with conditions:
 
-| Kondisi | Definisi |
+| Condition | Definition |
 |---|---|
-| `resolved=1` | DNS A record resolve |
+| `resolved=1` | DNS A record resolved |
 | `resolved=0` | NXDOMAIN / no A record |
-| `http_alive=1` | port 80 respond HTTP |
-| `https_alive=1` | port 443 respond HTTPS |
-| `cdn` | Cloudflare/Akamai/Fastly/CloudFront/dll |
-| `tech` | nginx/apache/wordpress/django/dll |
-| `interesting_tag` | admin/dev/staging/api/jenkins/dll |
-| `open_ports` | hasil scan TCP top 25 |
-| `cname` | CNAME chain (untuk takeover detection) |
+| `http_alive=1` | port 80 responds over HTTP |
+| `https_alive=1` | port 443 responds over HTTPS |
+| `cdn` | Cloudflare/Akamai/Fastly/CloudFront/etc |
+| `tech` | nginx/apache/wordpress/django/etc |
+| `interesting_tag` | admin/dev/staging/api/jenkins/etc |
+| `open_ports` | TCP top 25 scan results |
+| `cname` | CNAME chain (for takeover detection) |
 
-## Pakai
+## Usage
 
 ```bash
 pip install -r requirements.txt
@@ -92,7 +92,7 @@ pip install -r requirements.txt
 # Full pipeline (passive + active)
 python recon.py -d target.com
 
-# Passive saja (zero touch — tidak kontak target)
+# Passive only (zero touch — no direct target interaction)
 python recon.py -d target.com --mode passive
 
 # Tweak concurrency
@@ -107,26 +107,26 @@ ls output/
 
 ## Findings Severity
 
-| Level | Contoh |
+| Level | Example |
 |---|---|
-| **critical** | `.env` exposed dengan credentials, Spring heapdump |
+| **critical** | `.env` exposed with credentials, Spring heapdump |
 | **high** | Subdomain takeover, `.git/config` exposed |
-| **medium** | phpinfo, server-status apache |
+| **medium** | phpinfo, Apache server-status |
 | **low** | API docs (swagger), `.DS_Store` |
 | **info** | missing headers, login pages, version disclosure |
 
 ## Roadmap
 
-- [ ] Diff mode (compare run sebelumnya → asset baru)
-- [ ] JS file analysis (linkfinder regex untuk endpoints/secrets)
-- [ ] Parameter discovery (paramspider integration)
-- [ ] Screenshot via Playwright headless
-- [ ] Slack/Telegram notifier untuk new findings
-- [ ] nuclei template runner sebagai opt-in deep mode
-- [ ] Resume mode (`--resume` skip yang udah selesai)
+- [ ] Diff mode (compare previous runs → new assets)
+- [ ] JS file analysis (LinkFinder regex for endpoints/secrets)
+- [ ] Parameter discovery (ParamSpider integration)
+- [ ] Screenshot support via Playwright headless
+- [ ] Slack/Telegram notifier for new findings
+- [ ] nuclei template runner as opt-in deep mode
+- [ ] Resume mode (`--resume` skips completed tasks)
 
-## Catatan Etis
+## Ethical Notes
 
-Tool ini hanya untuk **target dengan otorisasi**. Demo eksekusi di atas
-menggunakan `hackerone.com` karena mereka punya public bug bounty yang
-eksplisit mengizinkan recon. Jangan gunakan terhadap target tanpa izin tertulis.
+This tool is intended only for **authorized targets**. The execution demo above
+uses `hackerone.com` because they explicitly allow reconnaissance through their
+public bug bounty program. Do not use this tool against targets without written authorization.
