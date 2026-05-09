@@ -1,0 +1,3481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ReconForge — smktelkom-pwt.sch.id</title>
+<style>
+  :root {
+    --bg: #0a0e27;
+    --panel: #131837;
+    --accent: #0066ff;
+    --accent2: #00d4ff;
+    --text: #e6e8f0;
+    --muted: #8892b0;
+    --border: rgba(0, 102, 255, 0.2);
+    --critical: #ff3860;
+    --high: #ff6b35;
+    --medium: #ffaa00;
+    --low: #00d4ff;
+    --info: #8892b0;
+    --ok: #00ff88;
+    --bad: #ff3860;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 { color: var(--accent2); font-size: 28px; margin-bottom: 4px; }
+  h2 { color: var(--accent); font-size: 18px; margin: 24px 0 12px; }
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+  }
+  .stat .num { color: var(--accent2); font-size: 28px; font-weight: bold; }
+  .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  th {
+    background: rgba(0, 102, 255, 0.15);
+    color: var(--accent2);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    word-break: break-all;
+  }
+  tr:hover { background: rgba(0, 102, 255, 0.05); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .b-alive { background: rgba(0, 255, 136, 0.15); color: var(--ok); }
+  .b-dead { background: rgba(136, 146, 176, 0.15); color: var(--muted); }
+  .b-200 { background: rgba(0, 255, 136, 0.15); color: var(--ok); }
+  .b-3xx { background: rgba(0, 212, 255, 0.15); color: var(--accent2); }
+  .b-4xx { background: rgba(255, 170, 0, 0.15); color: var(--medium); }
+  .b-5xx { background: rgba(255, 56, 96, 0.15); color: var(--bad); }
+  .b-critical { background: rgba(255, 56, 96, 0.2); color: var(--critical); }
+  .b-high { background: rgba(255, 107, 53, 0.2); color: var(--high); }
+  .b-medium { background: rgba(255, 170, 0, 0.2); color: var(--medium); }
+  .b-low { background: rgba(0, 212, 255, 0.2); color: var(--low); }
+  .b-info { background: rgba(136, 146, 176, 0.2); color: var(--info); }
+  .b-interesting { background: rgba(0, 102, 255, 0.25); color: var(--accent2); border: 1px solid var(--accent); }
+  .filter {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 300px;
+    margin-bottom: 12px;
+    font-family: inherit;
+  }
+  .scrollbox { max-height: 400px; overflow-y: auto; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+  details { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+  summary { cursor: pointer; color: var(--accent2); font-weight: 600; }
+  pre { background: var(--bg); padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ ReconForge Report</h1>
+  <div class="meta">Target: <strong style="color: var(--accent2)">smktelkom-pwt.sch.id</strong> · Generated: 2026-04-27 14:18:14</div>
+</div>
+
+<h2>📊 Statistics</h2>
+<div class="stats">
+  <div class="stat"><div class="num">56</div><div class="label">Subdomains</div></div>
+  <div class="stat"><div class="num">33</div><div class="label">Resolved</div></div>
+  <div class="stat"><div class="num">32</div><div class="label">HTTP Alive</div></div>
+  <div class="stat"><div class="num">4</div><div class="label">Interesting</div></div>
+  <div class="stat"><div class="num" style="color: var(--bad)">290</div><div class="label">Findings</div></div>
+</div>
+
+
+<h2>🪪 WHOIS</h2>
+<table>
+  
+</table>
+
+
+
+<h2>🌐 DNS Records</h2>
+<table>
+  <tr><th style="width: 100px">Type</th><th>Value</th></tr>
+  
+  <tr><td><span class="badge b-info">A</span></td><td>104.21.79.141</td></tr>
+  
+  <tr><td><span class="badge b-info">A</span></td><td>172.67.146.14</td></tr>
+  
+  <tr><td><span class="badge b-info">AAAA</span></td><td>2606:4700:3030::ac43:920e</td></tr>
+  
+  <tr><td><span class="badge b-info">AAAA</span></td><td>2606:4700:3034::6815:4f8d</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>1 aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>10 aspmx2.googlemail.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>5 alt1.aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>5 alt2.aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>10 aspmx3.googlemail.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">NS</span></td><td>vita.ns.cloudflare.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">NS</span></td><td>andy.ns.cloudflare.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">SOA</span></td><td>andy.ns.cloudflare.com. dns.cloudflare.com. 2402358044 10000 2400 604800 1800</td></tr>
+  
+  <tr><td><span class="badge b-info">A</span></td><td>172.67.146.14</td></tr>
+  
+  <tr><td><span class="badge b-info">A</span></td><td>104.21.79.141</td></tr>
+  
+  <tr><td><span class="badge b-info">AAAA</span></td><td>2606:4700:3034::6815:4f8d</td></tr>
+  
+  <tr><td><span class="badge b-info">AAAA</span></td><td>2606:4700:3030::ac43:920e</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>10 aspmx3.googlemail.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>10 aspmx2.googlemail.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>5 alt1.aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>5 alt2.aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>1 aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">NS</span></td><td>andy.ns.cloudflare.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">NS</span></td><td>vita.ns.cloudflare.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">SOA</span></td><td>andy.ns.cloudflare.com. dns.cloudflare.com. 2402358044 10000 2400 604800 1800</td></tr>
+  
+  <tr><td><span class="badge b-info">A</span></td><td>104.21.79.141</td></tr>
+  
+  <tr><td><span class="badge b-info">A</span></td><td>172.67.146.14</td></tr>
+  
+  <tr><td><span class="badge b-info">AAAA</span></td><td>2606:4700:3030::ac43:920e</td></tr>
+  
+  <tr><td><span class="badge b-info">AAAA</span></td><td>2606:4700:3034::6815:4f8d</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>5 alt1.aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>5 alt2.aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>10 aspmx2.googlemail.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>1 aspmx.l.google.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">MX</span></td><td>10 aspmx3.googlemail.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">NS</span></td><td>andy.ns.cloudflare.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">NS</span></td><td>vita.ns.cloudflare.com.</td></tr>
+  
+  <tr><td><span class="badge b-info">SOA</span></td><td>andy.ns.cloudflare.com. dns.cloudflare.com. 2402358044 10000 2400 604800 1800</td></tr>
+  
+</table>
+
+
+
+<h2>🚨 Findings (290)</h2>
+<table>
+  <tr>
+    <th style="width: 90px">Severity</th>
+    <th style="width: 160px">Category</th>
+    <th style="width: 200px">Subdomain</th>
+    <th>Title / Detail</th>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-critical">critical</span></td>
+    <td>spring_actuator</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Spring Boot heapdump exposed</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/actuator/heapdump</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/.well-known/ai-plugin.json</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/.well-known/assetlinks.json</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/.well-known/gpc.json</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/page-sitemap.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/post-sitemap.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-misc.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-page-2017-02.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-page-2020-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-page-2020-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2016-03.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2017-09.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2017-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2017-12.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-04.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-05.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-11.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-12.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-01.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-04.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-06.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-07.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-12.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2020-01.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2020-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2020-11.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-02.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-06.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-09.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2022-01.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2022-03.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2022-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id/sitemap.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/.well-known/ai-plugin.json</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/.well-known/assetlinks.json</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/.well-known/gpc.json</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/page-sitemap.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/post-sitemap.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-misc.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-page-2017-02.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-page-2020-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-page-2020-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2016-03.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2017-09.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2017-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2017-12.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-04.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-05.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-11.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2018-12.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-01.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-04.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-06.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-07.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2019-12.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2020-01.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2020-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2020-11.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-02.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-06.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-09.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2021-10.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2022-01.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2022-03.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id/sitemap-pt-post-2022-08.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>wayback_sensitive_file</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Sensitive file in archive history</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id/sitemap.xml</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-low">low</span></td>
+    <td>info_disclosure</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>.DS_Store exposed</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/.DS_Store</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smp5pwt.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://smp5pwt.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smp5pwt.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://smp5pwt.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smp5pwt.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://smp5pwt.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smp5pwt.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://smp5pwt.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smp5pwt.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://smp5pwt.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>smp5pwt.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://smp5pwt.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testing-app.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://testing-app.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testing-app.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://testing-app.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testing-app.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://testing-app.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testing-app.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://testing-app.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testing-app.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://testing-app.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testing-app.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://testing-app.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testppdb.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://testppdb.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testppdb.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://testppdb.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testppdb.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://testppdb.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testppdb.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://testppdb.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testppdb.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://testppdb.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>testppdb.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://testppdb.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tktelkomsolo.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://tktelkomsolo.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tktelkomsolo.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://tktelkomsolo.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tktelkomsolo.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://tktelkomsolo.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tktelkomsolo.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://tktelkomsolo.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tktelkomsolo.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://tktelkomsolo.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tktelkomsolo.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://tktelkomsolo.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tour.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://tour.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tour.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://tour.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tour.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://tour.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tour.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://tour.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aicademy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aicademy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>api-presensi.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://api-presensi.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>api-presensi.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://api-presensi.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>api-presensi.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://api-presensi.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>api-presensi.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://api-presensi.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>appik.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://appik.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>appik.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://appik.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>appik.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://appik.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>appik.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://appik.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /admin</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/admin → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /administrator</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/administrator → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /login</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/login → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /wp-admin</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/wp-admin → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /wp-login.php</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id/wp-login.php → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>version_disclosure</td>
+    <td>aptitude.smktelkom-pwt.sch.id</td>
+    <td><strong>Server version disclosed: nginx/1.24.0 (Ubuntu)</strong><br><span style="color: var(--muted); font-size: 12px">https://aptitude.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ayamkampung.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://ayamkampung.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ayamkampung.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://ayamkampung.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ayamkampung.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://ayamkampung.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ayamkampung.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://ayamkampung.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>bukusaku.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://bukusaku.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>bukusaku.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://bukusaku.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>bukusaku.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://bukusaku.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>bukusaku.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://bukusaku.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>codestudio.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://codestudio.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>codestudio.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://codestudio.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>codestudio.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://codestudio.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>codestudio.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://codestudio.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>e-kpko.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://e-kpko.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>e-kpko.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://e-kpko.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>e-kpko.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://e-kpko.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>e-kpko.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://e-kpko.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>formstematel.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://formstematel.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>formstematel.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://formstematel.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>formstematel.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://formstematel.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>formstematel.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://formstematel.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>graduation.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://graduation.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>graduation.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://graduation.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>graduation.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://graduation.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>graduation.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://graduation.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>handspace-ai.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://handspace-ai.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>handspace-ai.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://handspace-ai.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>handspace-ai.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://handspace-ai.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>handspace-ai.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://handspace-ai.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>handspace-ai.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://handspace-ai.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>handspace-ai.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://handspace-ai.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>inventory.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://inventory.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>inventory.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://inventory.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>inventory.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://inventory.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>inventory.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://inventory.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>juara.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://juara.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>juara.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://juara.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>juara.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://juara.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>juara.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://juara.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lions.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://lions.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lions.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://lions.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lions.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://lions.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lions.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://lions.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lsp.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://lsp.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lsp.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://lsp.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lsp.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://lsp.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>lsp.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://lsp.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>mylms.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /admin</strong><br><span style="color: var(--muted); font-size: 12px">https://mylms.smktelkom-pwt.sch.id/admin → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>mylms.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /administrator</strong><br><span style="color: var(--muted); font-size: 12px">https://mylms.smktelkom-pwt.sch.id/administrator → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>mylms.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /login</strong><br><span style="color: var(--muted); font-size: 12px">https://mylms.smktelkom-pwt.sch.id/login → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>login_page</td>
+    <td>mylms.smktelkom-pwt.sch.id</td>
+    <td><strong>Login page found at /wp-admin</strong><br><span style="color: var(--muted); font-size: 12px">https://mylms.smktelkom-pwt.sch.id/wp-admin → status 200</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>ppd.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://ppd.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tryout.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://tryout.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tryout.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://tryout.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tryout.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://tryout.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tryout.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://tryout.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tryout.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://tryout.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>tryout.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://tryout.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>web.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://web.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>webwa.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://webwa.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-arva-selvy.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-arva-selvy.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-fhaty-chelsya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-khafidz-raya.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-khafidz-raya.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-mikail-cinta.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-mikail-cinta.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Frame-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Referrer-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>wedding-rangga-madinna.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">http://wedding-rangga-madinna.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Strict-Transport-Security</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Content-Security-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing X-Content-Type-Options</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+  <tr>
+    <td><span class="badge b-info">info</span></td>
+    <td>missing_header</td>
+    <td>www.smktelkom-pwt.sch.id</td>
+    <td><strong>Missing Permissions-Policy</strong><br><span style="color: var(--muted); font-size: 12px">https://www.smktelkom-pwt.sch.id</span></td>
+  </tr>
+  
+</table>
+
+
+<h2>🌍 Subdomains (56)</h2>
+<input class="filter" placeholder="🔍 Filter subdomain..." oninput="filterTable(this.value)">
+<div class="scrollbox">
+<table id="subtable">
+  <tr>
+    <th>Subdomain</th>
+    <th>Status</th>
+    <th>HTTP</th>
+    <th>HTTPS</th>
+    <th>IP</th>
+    <th>Code</th>
+    <th>Title</th>
+    <th>Tech</th>
+    <th>CDN</th>
+    <th>Ports</th>
+    <th>Tag</th>
+    <th>Source</th>
+  </tr>
+  
+  <tr>
+    <td><strong>aicademy.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-5xx">500</span>
+      
+    </td>
+    <td>500 Internal server error</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>api-presensi.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td><span class="badge b-interesting">api</span></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>appik.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">302</span>
+      
+    </td>
+    <td>Redirecting to /login</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>aptitude.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>103.76.120.231</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Aptitude Adventure</td>
+    <td>nginx</td>
+    <td></td>
+    <td>22,80,443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>ayamkampung.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-5xx">502</span>
+      
+    </td>
+    <td>smktelkom-pwt.sch.id | 502: Bad gateway</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>bukusaku.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Buku Saku</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>codestudio.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>CodeStudio ;)</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>e-kpko.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">302</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>formstematel.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Form Pendaftaran SMK Telkom Purwokerto</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>graduation.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-5xx">500</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td><span class="badge b-interesting">uat</span></td>
+    <td style="color: var(--muted); font-size: 11px">rapiddns</td>
+  </tr>
+  
+  <tr>
+    <td><strong>handspace-ai.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>inventory.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Login - Inventaris SMK Telkom Purwokerto</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>juara.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Login - JUARA</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>lions.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>LIONS &#8211; Literasi Online Stematel</td>
+    <td>wordpress</td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>lsp.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>LSP SMK Telkom Purwokerto</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>mylms.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>103.31.38.186</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>BNI-Life Products</td>
+    <td>nginx</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>ppd.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">302</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>New Home 2026 - SMK Telkom Purwokerto</td>
+    <td>wordpress</td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>smp5pwt.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>testing-app.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td><span class="badge b-interesting">test</span></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>testppdb.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Index of /</td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td><span class="badge b-interesting">test</span></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>tktelkomsolo.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>tour.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>Web Tour SMK Telkom Purwokerto</td>
+    <td>wordpress</td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>tryout.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>103.163.138.114</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">307</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>22,53,80</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>web.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-200">200</span>
+      
+    </td>
+    <td>SMK Telkom Purwokerto &#8211; Just another WordPress site</td>
+    <td>wordpress</td>
+    <td>cloudflare</td>
+    <td>80,443,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>webwa.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>wedding-arva-selvy.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>wedding-fhaty-chelsya.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>wedding-khafidz-raya.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>wedding-mikail-cinta.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>wedding-rangga-madinna.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>—</td>
+    <td>104.21.79.141</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443,8080,8443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>www.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-alive">ALIVE</span>
+      
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>172.67.146.14</td>
+    <td>
+      
+        
+        <span class="badge b-3xx">301</span>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td>cloudflare</td>
+    <td>80,443</td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>alumni.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">rapiddns</td>
+  </tr>
+  
+  <tr>
+    <td><strong>bisa.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>bukutamu.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>cloud.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">dns_brute</td>
+  </tr>
+  
+  <tr>
+    <td><strong>elearning.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>exsist.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>kbmprakerin.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>osis.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">rapiddns</td>
+  </tr>
+  
+  <tr>
+    <td><strong>pilketos.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>presensi.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>sakuadmin.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>sakusiswa.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>smp1pwt.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>smp2ajb.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>smp2pwt.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>smp2wgn.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>starry.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>student.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">rapiddns</td>
+  </tr>
+  
+  <tr>
+    <td><strong>uasbk.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>ujicobaun.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>us.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>wedding-fabian-naifa.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">DEAD</span>
+      
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td>103.49.239.166</td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">hackertarget</td>
+  </tr>
+  
+  <tr>
+    <td><strong>www.kbmprakerin.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+  <tr>
+    <td><strong>www.ppd.smktelkom-pwt.sch.id</strong></td>
+    <td>
+      <span class="badge b-dead">NXDOMAIN</span>
+    </td>
+    <td>—</td>
+    <td>—</td>
+    <td></td>
+    <td>
+      
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="color: var(--muted); font-size: 11px">wayback</td>
+  </tr>
+  
+</table>
+</div>
+
+<script>
+  function filterTable(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('#subtable tr').forEach((row, i) => {
+      if (i === 0) return;
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

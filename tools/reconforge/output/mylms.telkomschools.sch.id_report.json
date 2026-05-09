@@ -1,0 +1,126 @@
+{
+  "domain": "mylms.telkomschools.sch.id",
+  "generated_at": "2026-04-28T14:23:11.389820",
+  "stats": {
+    "total_subdomains": 1,
+    "resolved": 1,
+    "alive": 1,
+    "interesting": 0,
+    "findings": 4
+  },
+  "whois": {
+    "domain_name": null,
+    "registrar": null,
+    "creation_date": null,
+    "expiration_date": null,
+    "updated_date": null,
+    "name_servers": null,
+    "emails": null,
+    "org": null,
+    "country": null,
+    "status": null
+  },
+  "dns_records": [
+    {
+      "id": 1,
+      "target_id": 1,
+      "record_type": "A",
+      "value": "172.67.70.26"
+    },
+    {
+      "id": 2,
+      "target_id": 1,
+      "record_type": "A",
+      "value": "104.26.12.52"
+    },
+    {
+      "id": 3,
+      "target_id": 1,
+      "record_type": "A",
+      "value": "104.26.13.52"
+    },
+    {
+      "id": 4,
+      "target_id": 1,
+      "record_type": "AAAA",
+      "value": "2606:4700:20::ac43:461a"
+    },
+    {
+      "id": 5,
+      "target_id": 1,
+      "record_type": "AAAA",
+      "value": "2606:4700:20::681a:c34"
+    },
+    {
+      "id": 6,
+      "target_id": 1,
+      "record_type": "AAAA",
+      "value": "2606:4700:20::681a:d34"
+    }
+  ],
+  "subdomains": [
+    {
+      "id": 1,
+      "target_id": 1,
+      "subdomain": "mylms.telkomschools.sch.id",
+      "source": "hackertarget",
+      "resolved": 1,
+      "ip": "104.26.13.52",
+      "cname": null,
+      "http_alive": 1,
+      "https_alive": 1,
+      "status_code": 403,
+      "title": "Just a moment...",
+      "server": "cloudflare",
+      "tech": null,
+      "cdn": "cloudflare",
+      "redirect": "",
+      "content_length": 5335,
+      "open_ports": null,
+      "interesting_tag": null,
+      "last_seen": "2026-04-28 07:22:33"
+    }
+  ],
+  "findings": [
+    {
+      "id": 1,
+      "target_id": 1,
+      "subdomain": "mylms.telkomschools.sch.id",
+      "severity": "low",
+      "category": "wayback_sensitive_file",
+      "title": "Sensitive file in archive history",
+      "detail": "https://mylms.telkomschools.sch.id/.well-known/ai-plugin.json",
+      "found_at": "2026-04-28 07:22:21"
+    },
+    {
+      "id": 2,
+      "target_id": 1,
+      "subdomain": "mylms.telkomschools.sch.id",
+      "severity": "low",
+      "category": "wayback_sensitive_file",
+      "title": "Sensitive file in archive history",
+      "detail": "https://mylms.telkomschools.sch.id/.well-known/assetlinks.json",
+      "found_at": "2026-04-28 07:22:21"
+    },
+    {
+      "id": 3,
+      "target_id": 1,
+      "subdomain": "mylms.telkomschools.sch.id",
+      "severity": "low",
+      "category": "wayback_sensitive_file",
+      "title": "Sensitive file in archive history",
+      "detail": "https://mylms.telkomschools.sch.id/.well-known/gpc.json",
+      "found_at": "2026-04-28 07:22:21"
+    },
+    {
+      "id": 4,
+      "target_id": 1,
+      "subdomain": "mylms.telkomschools.sch.id",
+      "severity": "low",
+      "category": "wayback_sensitive_file",
+      "title": "Sensitive file in archive history",
+      "detail": "https://mylms.telkomschools.sch.id/sitemap.xml",
+      "found_at": "2026-04-28 07:22:21"
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ReconForge — {{ domain }}</title>
+<style>
+  :root {
+    --bg: #0a0e27;
+    --panel: #131837;
+    --accent: #0066ff;
+    --accent2: #00d4ff;
+    --text: #e6e8f0;
+    --muted: #8892b0;
+    --border: rgba(0, 102, 255, 0.2);
+    --critical: #ff3860;
+    --high: #ff6b35;
+    --medium: #ffaa00;
+    --low: #00d4ff;
+    --info: #8892b0;
+    --ok: #00ff88;
+    --bad: #ff3860;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 { color: var(--accent2); font-size: 28px; margin-bottom: 4px; }
+  h2 { color: var(--accent); font-size: 18px; margin: 24px 0 12px; }
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+  }
+  .stat .num { color: var(--accent2); font-size: 28px; font-weight: bold; }
+  .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  th {
+    background: rgba(0, 102, 255, 0.15);
+    color: var(--accent2);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    word-break: break-all;
+  }
+  tr:hover { background: rgba(0, 102, 255, 0.05); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .b-alive { background: rgba(0, 255, 136, 0.15); color: var(--ok); }
+  .b-dead { background: rgba(136, 146, 176, 0.15); color: var(--muted); }
+  .b-200 { background: rgba(0, 255, 136, 0.15); color: var(--ok); }
+  .b-3xx { background: rgba(0, 212, 255, 0.15); color: var(--accent2); }
+  .b-4xx { background: rgba(255, 170, 0, 0.15); color: var(--medium); }
+  .b-5xx { background: rgba(255, 56, 96, 0.15); color: var(--bad); }
+  .b-critical { background: rgba(255, 56, 96, 0.2); color: var(--critical); }
+  .b-high { background: rgba(255, 107, 53, 0.2); color: var(--high); }
+  .b-medium { background: rgba(255, 170, 0, 0.2); color: var(--medium); }
+  .b-low { background: rgba(0, 212, 255, 0.2); color: var(--low); }
+  .b-info { background: rgba(136, 146, 176, 0.2); color: var(--info); }
+  .b-interesting { background: rgba(0, 102, 255, 0.25); color: var(--accent2); border: 1px solid var(--accent); }
+  .filter {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    width: 300px;
+    margin-bottom: 12px;
+    font-family: inherit;
+  }
+  .scrollbox { max-height: 400px; overflow-y: auto; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+  details { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+  summary { cursor: pointer; color: var(--accent2); font-weight: 600; }
+  pre { background: var(--bg); padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ ReconForge Report</h1>
+  <div class="meta">Target: <strong style="color: var(--accent2)">{{ domain }}</strong> · Generated: {{ generated_at }}</div>
+</div>
+
+<h2>📊 Statistics</h2>
+<div class="stats">
+  <div class="stat"><div class="num">{{ stats.total_subdomains }}</div><div class="label">Subdomains</div></div>
+  <div class="stat"><div class="num">{{ stats.resolved }}</div><div class="label">Resolved</div></div>
+  <div class="stat"><div class="num">{{ stats.alive }}</div><div class="label">HTTP Alive</div></div>
+  <div class="stat"><div class="num">{{ stats.interesting }}</div><div class="label">Interesting</div></div>
+  <div class="stat"><div class="num" style="color: var(--bad)">{{ stats.findings }}</div><div class="label">Findings</div></div>
+</div>
+
+{% if whois %}
+<h2>🪪 WHOIS</h2>
+<table>
+  {% for k, v in whois.items() if v %}
+  <tr><th style="width: 180px">{{ k }}</th><td>{{ v }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if dns_records %}
+<h2>🌐 DNS Records</h2>
+<table>
+  <tr><th style="width: 100px">Type</th><th>Value</th></tr>
+  {% for r in dns_records %}
+  <tr><td><span class="badge b-info">{{ r.record_type }}</span></td><td>{{ r.value }}</td></tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+{% if findings %}
+<h2>🚨 Findings ({{ findings|length }})</h2>
+<table>
+  <tr>
+    <th style="width: 90px">Severity</th>
+    <th style="width: 160px">Category</th>
+    <th style="width: 200px">Subdomain</th>
+    <th>Title / Detail</th>
+  </tr>
+  {% for f in findings %}
+  <tr>
+    <td><span class="badge b-{{ f.severity }}">{{ f.severity }}</span></td>
+    <td>{{ f.category }}</td>
+    <td>{{ f.subdomain }}</td>
+    <td><strong>{{ f.title }}</strong><br><span style="color: var(--muted); font-size: 12px">{{ f.detail }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<h2>🌍 Subdomains ({{ subdomains|length }})</h2>
+<input class="filter" placeholder="🔍 Filter subdomain..." oninput="filterTable(this.value)">
+<div class="scrollbox">
+<table id="subtable">
+  <tr>
+    <th>Subdomain</th>
+    <th>Status</th>
+    <th>HTTP</th>
+    <th>HTTPS</th>
+    <th>IP</th>
+    <th>Code</th>
+    <th>Title</th>
+    <th>Tech</th>
+    <th>CDN</th>
+    <th>Ports</th>
+    <th>Tag</th>
+    <th>Source</th>
+  </tr>
+  {% for s in subdomains %}
+  <tr>
+    <td><strong>{{ s.subdomain }}</strong></td>
+    <td>
+      {% if s.http_alive or s.https_alive %}<span class="badge b-alive">ALIVE</span>
+      {% elif s.resolved %}<span class="badge b-dead">DEAD</span>
+      {% else %}<span class="badge b-dead">NXDOMAIN</span>{% endif %}
+    </td>
+    <td>{% if s.http_alive %}✓{% else %}—{% endif %}</td>
+    <td>{% if s.https_alive %}✓{% else %}—{% endif %}</td>
+    <td>{{ s.ip or '' }}</td>
+    <td>
+      {% if s.status_code %}
+        {% set sc = s.status_code | string %}
+        <span class="badge b-{% if sc.startswith('2') %}200{% elif sc.startswith('3') %}3xx{% elif sc.startswith('4') %}4xx{% else %}5xx{% endif %}">{{ s.status_code }}</span>
+      {% endif %}
+    </td>
+    <td>{{ (s.title or '')[:60] }}</td>
+    <td>{{ s.tech or '' }}</td>
+    <td>{{ s.cdn or '' }}</td>
+    <td>{{ s.open_ports or '' }}</td>
+    <td>{% if s.interesting_tag %}<span class="badge b-interesting">{{ s.interesting_tag }}</span>{% endif %}</td>
+    <td style="color: var(--muted); font-size: 11px">{{ s.source }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<script>
+  function filterTable(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('#subtable tr').forEach((row, i) => {
+      if (i === 0) return;
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
