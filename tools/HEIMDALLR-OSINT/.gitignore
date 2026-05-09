@@ -1,0 +1,30 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+CYBER/
+*.egg-info/
+.pytest_cache/
+
+# --- Project ---
+.env
+*.db
+*.db-journal
+*.sqlite3
+logs/
+*.log
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+Thumbs.db
