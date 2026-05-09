@@ -1,0 +1,66 @@
+{# Findings table partial — delivered by /partials/findings and embedded on initial load #}
+{% if findings|length == 0 %}
+  <div class="p-10 text-center">
+    <div class="text-bifrost-cyan/60 font-display tracking-[0.3em] text-xs uppercase mb-3">
+      ⟨ horizon · clear ⟩
+    </div>
+    <p class="text-dim text-sm">No findings yet. Trigger a scan or wait for the next interval sweep.</p>
+  </div>
+{% else %}
+<table class="w-full text-sm">
+  <thead>
+    <tr class="text-left text-[10px] tracking-[0.2em] uppercase text-dim border-b border-line">
+      <th class="px-4 py-3 w-[90px]">severity</th>
+      <th class="px-4 py-3 w-[120px]">collector</th>
+      <th class="px-4 py-3 w-[140px]">type</th>
+      <th class="px-4 py-3">title / evidence</th>
+      <th class="px-4 py-3 w-[140px]">first seen</th>
+      <th class="px-4 py-3 w-[120px]">status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for f in findings %}
+    <tr class="finding-row border-b border-line/40 align-top">
+      <td class="px-4 py-3">
+        <span class="sev-{{ f.severity }} text-[10px] font-bold tracking-[0.15em] uppercase px-2 py-1 rounded-sm">
+          {{ f.severity }}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-bifrost-cyan/90 text-xs">{{ f.collector }}</td>
+      <td class="px-4 py-3 text-dim text-xs">{{ f.finding_type }}</td>
+      <td class="px-4 py-3">
+        <div class="font-medium text-ink truncate-soft" title="{{ f.title }}">{{ f.title }}</div>
+        {% if f.description %}
+        <div class="text-xs text-dim mt-0.5 truncate-soft" title="{{ f.description }}">{{ f.description }}</div>
+        {% endif %}
+        {% if f.evidence_url %}
+        <a href="{{ f.evidence_url }}" target="_blank" rel="noopener"
+           class="inline-block mt-1 text-[11px] text-bifrost-cyan hover:text-bifrost-violet underline decoration-dotted underline-offset-2 truncate-soft"
+           title="{{ f.evidence_url }}">
+          ↗ {{ f.evidence_url }}
+        </a>
+        {% endif %}
+      </td>
+      <td class="px-4 py-3 text-xs text-dim whitespace-nowrap" title="{{ f.first_seen }}">
+        {{ f.first_seen.strftime('%Y-%m-%d') }}<br/>
+        <span class="text-dim/70">{{ f.first_seen.strftime('%H:%M UTC') }}</span>
+      </td>
+      <td class="px-4 py-3">
+        <select
+          class="bg-bg-2 border border-line px-2 py-1 text-xs text-ink rounded-sm focus:outline-none focus:border-bifrost-cyan"
+          hx-patch="/api/findings/{{ f.id }}/status"
+          hx-trigger="change"
+          hx-swap="none"
+          hx-include="this"
+          name="status">
+          <option value="new"            {% if f.status == 'new' %}selected{% endif %}>new</option>
+          <option value="acknowledged"   {% if f.status == 'acknowledged' %}selected{% endif %}>acknowledged</option>
+          <option value="false_positive" {% if f.status == 'false_positive' %}selected{% endif %}>false positive</option>
+          <option value="resolved"       {% if f.status == 'resolved' %}selected{% endif %}>resolved</option>
+        </select>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}

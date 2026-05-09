@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_name }} // {{ target_domain }}{% endblock %}
+
+{% block content %}
+<div class="transmission-bar"></div>
+
+<!-- ============================================================
+     HEADER — Heimdall sigil + title + actions
+     ============================================================ -->
+<header class="border-b border-line/60 bg-bg-1/60 backdrop-blur">
+  <div class="max-w-[1600px] mx-auto px-6 py-5 flex items-center justify-between gap-6 flex-wrap">
+    <div class="flex items-center gap-4">
+      <div class="relative h-10 w-10 flex items-center justify-center">
+        <svg viewBox="0 0 40 40" class="h-full w-full eye-scan">
+          <defs>
+            <radialGradient id="eyeGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.9"/>
+              <stop offset="60%" stop-color="#a78bfa" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="20" cy="20" r="18" fill="none" stroke="#7dd3fc" stroke-width="0.6" opacity="0.6"/>
+          <circle cx="20" cy="20" r="14" fill="none" stroke="#a78bfa" stroke-width="0.5" opacity="0.5"/>
+          <circle cx="20" cy="20" r="8" fill="url(#eyeGrad)"/>
+          <circle cx="20" cy="20" r="3.5" fill="#05070b" stroke="#fcd34d" stroke-width="0.6"/>
+          <line x1="20" y1="2" x2="20" y2="8"  stroke="#7dd3fc" stroke-width="0.5"/>
+          <line x1="20" y1="32" x2="20" y2="38" stroke="#7dd3fc" stroke-width="0.5"/>
+          <line x1="2" y1="20" x2="8" y2="20" stroke="#7dd3fc" stroke-width="0.5"/>
+          <line x1="32" y1="20" x2="38" y2="20" stroke="#7dd3fc" stroke-width="0.5"/>
+        </svg>
+      </div>
+
+      <div>
+        <div class="font-display text-[11px] tracking-[0.3em] text-bifrost-cyan/80 uppercase">
+          ⟨ watching the bifröst ⟩
+        </div>
+        <h1 class="font-display text-2xl md:text-3xl font-bold tracking-tight text-ink">
+          HEIMDALLR<span class="text-bifrost-cyan">·</span>OSINT
+        </h1>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button
+        class="btn-cyber"
+        {% if target %}
+        hx-post="/api/scan?target={{ target.domain }}"
+        {% else %}
+        hx-post="/api/scan"
+        {% endif %}
+        hx-swap="none"
+        hx-on::after-request="setTimeout(() => { htmx.trigger('#stats-region', 'refresh'); htmx.trigger('#findings-region', 'refresh'); htmx.trigger('#runs-region', 'refresh'); }, 1800)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1.06 6.64 2.88"/><path d="M21 3v6h-6"/></svg>
+        Trigger Scan
+      </button>
+      <a href="/docs" target="_blank" class="btn-cyber" style="border-color: rgba(167,139,250,0.4); color:#ddd6fe;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        API
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     TARGET BAR — switcher + add form + designation card
+     ============================================================ -->
+<section class="max-w-[1600px] mx-auto px-6 pt-6">
+  <div id="target-bar" hx-trigger="refresh" hx-get="/partials/target-bar?target={{ target.domain if target else '' }}" hx-swap="innerHTML">
+    {% include "partials/target_bar.html" %}
+  </div>
+</section>
+
+<!-- ============================================================
+     STATS STRIP
+     ============================================================ -->
+<section class="max-w-[1600px] mx-auto px-6 pt-4">
+  <div
+    id="stats-region"
+    hx-get="/partials/stats?target={{ target.domain if target else '' }}"
+    hx-trigger="refresh, every 15s"
+    hx-swap="innerHTML"
+  >
+    {% include "partials/stats_cards.html" %}
+  </div>
+</section>
+
+<!-- ============================================================
+     MAIN GRID — findings table + side rail
+     ============================================================ -->
+<section class="max-w-[1600px] mx-auto px-6 py-6 grid grid-cols-12 gap-6">
+
+  <div class="col-span-12 xl:col-span-9">
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="font-display text-sm tracking-[0.25em] text-bifrost-cyan/90 uppercase">
+        ⟢ Exposure Findings
+      </h2>
+      <div class="text-[11px] text-dim">auto-refresh · 30s</div>
+    </div>
+
+    <form class="surface px-4 py-3 mb-3 flex flex-wrap items-center gap-3 text-sm"
+          hx-get="/partials/findings"
+          hx-trigger="change, refresh from:body, every 30s"
+          hx-target="#findings-region"
+          hx-swap="innerHTML">
+      <input type="hidden" name="target" value="{{ target.domain if target else '' }}">
+      <label class="flex items-center gap-2 text-dim">
+        <span class="text-[10px] tracking-widest uppercase">severity</span>
+        <select name="severity" class="bg-bg-2 border border-line px-2 py-1 text-ink rounded-sm focus:outline-none focus:border-bifrost-cyan">
+          <option value="">all</option>
+          <option value="critical">critical</option>
+          <option value="high">high</option>
+          <option value="medium">medium</option>
+          <option value="low">low</option>
+          <option value="info">info</option>
+        </select>
+      </label>
+      <label class="flex items-center gap-2 text-dim">
+        <span class="text-[10px] tracking-widest uppercase">collector</span>
+        <select name="collector" class="bg-bg-2 border border-line px-2 py-1 text-ink rounded-sm focus:outline-none focus:border-bifrost-cyan">
+          <option value="">all</option>
+          <option value="crtsh">crt.sh</option>
+          <option value="xposedornot">xposedornot</option>
+          <option value="leakcheck">leakcheck</option>
+          <option value="github_dork">github_dork</option>
+          <option value="google_dork">google_dork</option>
+          <option value="pastebin">pastebin</option>
+        </select>
+      </label>
+      <label class="flex items-center gap-2 text-dim">
+        <span class="text-[10px] tracking-widest uppercase">status</span>
+        <select name="status" class="bg-bg-2 border border-line px-2 py-1 text-ink rounded-sm focus:outline-none focus:border-bifrost-cyan">
+          <option value="">all</option>
+          <option value="new">new</option>
+          <option value="acknowledged">acknowledged</option>
+          <option value="false_positive">false positive</option>
+          <option value="resolved">resolved</option>
+        </select>
+      </label>
+    </form>
+
+    <div id="findings-region" class="surface overflow-hidden">
+      {% include "partials/findings_table.html" %}
+    </div>
+  </div>
+
+  <aside class="col-span-12 xl:col-span-3">
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="font-display text-sm tracking-[0.25em] text-bifrost-violet/90 uppercase">
+        ⟢ Scan Runs
+      </h2>
+      <div class="text-[11px] text-dim">15s</div>
+    </div>
+    <div
+      id="runs-region"
+      class="surface p-3"
+      hx-get="/partials/scan-runs?target={{ target.domain if target else '' }}"
+      hx-trigger="refresh, every 15s"
+      hx-swap="innerHTML"
+    >
+      {% include "partials/scan_runs.html" %}
+    </div>
+
+    <div class="surface p-4 mt-4 text-[11px] text-dim leading-relaxed">
+      <div class="font-display tracking-widest text-bifrost-cyan/80 uppercase mb-2">Severity Legend</div>
+      <div class="flex flex-col gap-1">
+        <div><span class="sev-critical px-2 py-0.5 rounded-sm">critical</span> <span class="ml-2">private key · hardcoded secret</span></div>
+        <div><span class="sev-high px-2 py-0.5 rounded-sm">high</span> <span class="ml-2">credential · .env leak</span></div>
+        <div><span class="sev-medium px-2 py-0.5 rounded-sm">medium</span> <span class="ml-2">api ref · paste hit</span></div>
+        <div><span class="sev-low px-2 py-0.5 rounded-sm">low</span> <span class="ml-2">pii-only breach</span></div>
+        <div><span class="sev-info px-2 py-0.5 rounded-sm">info</span> <span class="ml-2">subdomain · metadata</span></div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<footer class="border-t border-line/50 py-4 text-center text-[11px] text-dim">
+  <span class="tracking-widest uppercase">HeimdallrOsint</span> · threat intel sentinel · v0.2
+  &nbsp;·&nbsp;
+  <span class="text-bifrost-cyan/70">"Heimdall sees through all mist and beyond the Bifröst."</span>
+</footer>
+{% endblock %}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+
+  <!-- Typography: JetBrains Mono + IBM Plex Sans for body contrast -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind via CDN (sufficient for MVP; swap to CLI build for prod) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Space Mono"', 'monospace'],
+          },
+          colors: {
+            bg: {
+              0: '#05070b',
+              1: '#0b0f17',
+              2: '#111620',
+              3: '#181f2c',
+            },
+            line: '#1f2a3a',
+            dim: '#5c6a80',
+            ink: '#dfe6f0',
+            bifrost: {
+              cyan: '#7dd3fc',
+              violet: '#a78bfa',
+              amber: '#fcd34d',
+              rose: '#fb7185',
+              green: '#4ade80',
+            },
+          },
+          boxShadow: {
+            'glow-cyan': '0 0 24px rgba(125, 211, 252, 0.25)',
+            'glow-rose': '0 0 24px rgba(251, 113, 133, 0.35)',
+            'glow-amber': '0 0 24px rgba(252, 211, 77, 0.30)',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js" defer></script>
+
+  <link rel="stylesheet" href="/static/css/custom.css" />
+</head>
+<body class="font-mono bg-bg-0 text-ink min-h-screen relative overflow-x-hidden" hx-ext="json-enc">
+  <!-- Atmospheric backdrop: scanlines + gradient mesh -->
+  <div aria-hidden="true" class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(125,211,252,0.08),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(167,139,250,0.07),transparent_55%)]"></div>
+    <div class="absolute inset-0 scanlines opacity-40"></div>
+    <div class="absolute inset-0 grid-bg opacity-30"></div>
+  </div>
+
+  <div class="relative z-10">
+    {% block content %}{% endblock %}
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

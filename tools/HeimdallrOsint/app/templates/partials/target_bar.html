@@ -1,0 +1,76 @@
+{# Target bar: designation card + switcher dropdown + add-target form #}
+<div class="surface hud-corners px-5 py-4 grid grid-cols-12 gap-4 items-center">
+
+  <!-- Current target designation -->
+  <div class="col-span-12 lg:col-span-4">
+    <div class="text-[10px] tracking-[0.25em] text-dim uppercase mb-1">Target · Designation</div>
+    <div class="flex items-center gap-2">
+      <span class="status-dot status-success"></span>
+      <span class="font-display font-bold text-xl text-bifrost-cyan truncate">{{ target_domain }}</span>
+    </div>
+    <div class="text-[11px] text-dim mt-1">
+      interval ≈ {{ scan_interval }}m ·
+      {% if stats.last_scan_at %}
+        last <span class="text-ink/80" title="{{ stats.last_scan_at }}">{{ stats.last_scan_at.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+      {% else %}
+        <span class="text-bifrost-amber">no scan yet</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Switcher dropdown -->
+  <div class="col-span-12 sm:col-span-6 lg:col-span-4">
+    <div class="text-[10px] tracking-[0.25em] text-dim uppercase mb-1">Switch Target</div>
+    {% if all_targets|length == 0 %}
+      <div class="text-[12px] text-dim italic">no targets yet — add one →</div>
+    {% else %}
+      <select
+        class="w-full bg-bg-2 border border-line px-3 py-2 text-ink rounded-sm text-sm focus:outline-none focus:border-bifrost-cyan"
+        onchange="if(this.value) window.location = '/?target=' + encodeURIComponent(this.value);">
+        {% for t in all_targets %}
+          <option value="{{ t.domain }}" {% if target and t.domain == target.domain %}selected{% endif %}>
+            {{ t.domain }}{% if t.last_scan_at %} · {{ t.last_scan_at.strftime('%m-%d %H:%M') }}{% else %} · not scanned{% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    {% endif %}
+  </div>
+
+  <!-- Add target form -->
+  <div class="col-span-12 sm:col-span-6 lg:col-span-4">
+    <div class="text-[10px] tracking-[0.25em] text-dim uppercase mb-1">Add Target &amp; Scan</div>
+    <form
+      class="flex gap-2"
+      hx-post="/api/targets"
+      hx-ext="ignore:json-enc"
+      hx-encoding="application/x-www-form-urlencoded"
+      hx-swap="none"
+      hx-on::response-error="this.querySelector('.err').textContent = event.detail.xhr.responseText;"
+    >
+      <input
+        type="text"
+        name="domain"
+        placeholder="example.com"
+        required
+        pattern="^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"
+        class="flex-1 bg-bg-2 border border-line px-3 py-2 text-ink rounded-sm text-sm font-mono focus:outline-none focus:border-bifrost-cyan placeholder:text-dim/60"
+      />
+      <button type="submit" class="btn-cyber">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Watch
+      </button>
+    </form>
+    <div class="err text-[11px] text-bifrost-rose mt-1 font-mono"></div>
+    {% if target %}
+    <div class="mt-2 text-[10px] text-dim/80">
+      <button
+        type="button"
+        class="text-bifrost-rose/70 hover:text-bifrost-rose tracking-wider uppercase"
+        hx-delete="/api/targets/{{ target.domain }}"
+        hx-confirm="Remove {{ target.domain }} and ALL its findings?"
+        hx-swap="none"
+      >✕ stop watching {{ target.domain }}</button>
+    </div>
+    {% endif %}
+  </div>
+</div>

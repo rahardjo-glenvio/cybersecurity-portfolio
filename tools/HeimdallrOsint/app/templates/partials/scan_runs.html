@@ -1,0 +1,30 @@
+{% if recent_runs|length == 0 %}
+  <div class="text-[11px] text-dim py-3 text-center tracking-widest uppercase">no scan runs yet</div>
+{% else %}
+  <ul class="flex flex-col gap-2">
+    {% for r in recent_runs %}
+    <li class="text-xs border-l-2 pl-3 py-1
+      {% if r.status == 'success' %}border-bifrost-green
+      {% elif r.status == 'failed' %}border-bifrost-rose
+      {% elif r.status == 'skipped' %}border-dim
+      {% else %}border-bifrost-cyan{% endif %}">
+      <div class="flex items-center justify-between gap-2">
+        <span class="font-semibold text-ink/90">{{ r.collector }}</span>
+        <span class="text-[10px] tracking-widest uppercase
+          {% if r.status == 'success' %}text-bifrost-green
+          {% elif r.status == 'failed' %}text-bifrost-rose
+          {% elif r.status == 'skipped' %}text-dim
+          {% else %}text-bifrost-cyan{% endif %}">
+          <span class="status-dot status-{{ r.status }}"></span>{{ r.status }}
+        </span>
+      </div>
+      <div class="text-[10px] text-dim mt-0.5">
+        {{ r.started_at.strftime('%m-%d %H:%M UTC') }} · {{ r.findings_count }} finding{% if r.findings_count != 1 %}s{% endif %}
+      </div>
+      {% if r.error %}
+      <div class="text-[10px] text-bifrost-rose/80 mt-1 truncate-soft" title="{{ r.error }}">⚠ {{ r.error }}</div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% endif %}
