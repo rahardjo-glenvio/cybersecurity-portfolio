@@ -1,5 +1,5 @@
 # 🛡️ Wazuh SIEM Attack Detection Lab
-### MK2-B PAS — Kelas XI TJKT 2 Kelompok 3
+### MK2-B PAS - Kelas XI TJKT 2 Kelompok 3
 
 **SMK Telkom Purwokerto** | Teknik Jaringan Komputer dan Telekomunikasi
 
@@ -65,7 +65,7 @@ wazuh-siem-attack-detection-lab/
 | **Sekolah** | SMK Telkom Purwokerto |
 | **Program Keahlian** | Teknik Jaringan Komputer dan Telekomunikasi (TJKT) |
 | **Mata Pelajaran** | Keamanan Jaringan (MK2-B) |
-| **Jenis Penilaian** | PAS — Penilaian Akhir Semester |
+| **Jenis Penilaian** | PAS - Penilaian Akhir Semester |
 | **Kelas** | XI TJKT 2 |
 | **Tahun Ajaran** | 2025/2026 |
 
