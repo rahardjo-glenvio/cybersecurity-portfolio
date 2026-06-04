@@ -9,7 +9,7 @@
 
 Modul praktikum penetration testing yang dirancang untuk memahami bagaimana serangan umum pada layanan jaringan bekerja, serta bagaimana **Wazuh SIEM** mendeteksi aktivitas mencurigakan tersebut secara real-time.
 
-Setiap serangan dilakukan dalam **environment lab yang terisolasi** dan dimonitor oleh Wazuh Manager untuk keperluan pembelajaran keamanan jaringan — baik dari sisi offensive maupun defensive.
+Setiap serangan dilakukan dalam **environment lab yang terisolasi** dan dimonitor oleh Wazuh Manager untuk keperluan pembelajaran keamanan jaringan, baik dari sisi offensive maupun defensive.
 
 ---
 
@@ -51,10 +51,10 @@ wazuh-siem-attack-detection-lab/
 
 | No | Nama | NIS |
 |----|------|-----|
-| 1  | [Nama Anggota 1] | [NIS] |
-| 2  | [Nama Anggota 2] | [NIS] |
-| 3  | [Nama Anggota 3] | [NIS] |
-| 4  | [Nama Anggota 4] | [NIS] |
+| 1  | Glenvio Regalito Rahardjo  | 541241446 |
+| 2  | Stevanda Dimas Eza Pratama | 541241480 |
+| 3  | Aqila Keysa Putri Adlina   | 541241413 |
+| 4  | Tikror Ibnu Musyafi        | 541241482 |
 
 ---
 
