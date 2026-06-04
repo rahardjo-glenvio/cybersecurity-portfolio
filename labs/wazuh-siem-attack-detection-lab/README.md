@@ -46,7 +46,7 @@ wazuh-siem-attack-detection-lab/
 
 ---
 
-## 👥 Anggota Kelompok 3 — XI TJKT 2
+## 👥 Anggota Kelompok 3 - XI TJKT 2
 
 | No | Nama | NIS |
 |----|------|-----|
