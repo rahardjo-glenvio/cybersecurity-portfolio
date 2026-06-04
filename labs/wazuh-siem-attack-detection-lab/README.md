@@ -41,8 +41,7 @@ Setiap serangan dilakukan dalam **environment lab yang terisolasi** dan dimonito
 ```
 wazuh-siem-attack-detection-lab/
 ├── README.md
-└── modul/
-    └── Modul_Serangan_MK2-B_PAS_KELOMPOK_3.pdf
+└── Modul_Serangan_MK2-B_PAS_KELOMPOK_3.pdf
 ```
 
 ---
