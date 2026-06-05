@@ -1,0 +1,29 @@
+# ===== SENSITIVE =====
+.env
+*.pem
+*.key
+*.cert
+
+# ===== DEPENDENCIES =====
+node_modules/
+*/node_modules/
+
+# ===== BUILD OUTPUT =====
+frontend/build/
+frontend/.cache/
+
+# ===== LOGS & RUNTIME =====
+*.log
+*.pid
+npm-debug.log*
+
+# ===== BACKUP & TEMP FILES =====
+*.backup
+*.old
+*.save
+*.save.*
+components.backup/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 246" width="32" height="32">
+  <defs>
+    <linearGradient id="g0" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7fffff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#00aadd" stop-opacity="0.88"/>
+    </linearGradient>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffee" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#00bbff" stop-opacity="0.88"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00ddff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0077bb" stop-opacity="0.80"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ccff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0088cc" stop-opacity="0.80"/>
+    </linearGradient>
+    <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00aabb" stop-opacity="0.90"/>
+      <stop offset="100%" stop-color="#005577" stop-opacity="0.88"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Dark background circle -->
+  <circle cx="100" cy="123" r="110" fill="#020c18"/>
+  <!-- Shield pieces -->
+  <path d="M100,18 L28,60 L28,118 L100,118 Z"  fill="url(#g0)" filter="url(#glow)"/>
+  <path d="M100,18 L172,60 L172,118 L100,118 Z" fill="url(#g1)" filter="url(#glow)"/>
+  <path d="M28,118 L100,118 L100,158 L28,158 Z"  fill="url(#g2)" filter="url(#glow)"/>
+  <path d="M100,118 L172,118 L172,158 L100,158 Z" fill="url(#g3)" filter="url(#glow)"/>
+  <path d="M28,158 L172,158 L100,228 Z"           fill="url(#g4)" filter="url(#glow)"/>
+  <!-- Outer border -->
+  <path d="M100,18 L172,60 L172,158 L100,228 L28,158 L28,60 Z"
+        fill="none" stroke="rgba(0,220,255,0.6)" stroke-width="2"/>
+  <!-- Center gem -->
+  <circle cx="100" cy="118" r="4" fill="rgba(0,255,220,0.9)"/>
+</svg>
