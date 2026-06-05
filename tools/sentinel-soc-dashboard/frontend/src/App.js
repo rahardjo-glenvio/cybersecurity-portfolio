@@ -130,7 +130,7 @@ function App() {
   return (
     <div className="App">
       <div className="app-header">
-        <h1>Sentinel SOC Dashboard</h1>
+        <h1>Project SENTINEL</h1>
         <div className="menu-dropdown" ref={menuRef}>
           <button
             className={`menu-trigger ${menuOpen ? 'open' : ''}`}

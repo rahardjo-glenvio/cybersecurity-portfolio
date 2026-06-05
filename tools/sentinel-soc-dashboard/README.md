@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🛡️ SENTINEL SOC Dashboard
+# 🛡️ Project SENTINEL
 
-**Real-time Security Operations Center built on Wazuh SIEM**
+**Security Event and Network Threat Intelligence with Notification, Evidence and Live-map**
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Express_5-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
@@ -66,7 +66,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    SENTINEL SOC                          │
+│                  PROJECT SENTINEL                        │
 │                                                         │
 │  Frontend                    Backend                    │
 │  ─────────────────           ────────────────────       │
