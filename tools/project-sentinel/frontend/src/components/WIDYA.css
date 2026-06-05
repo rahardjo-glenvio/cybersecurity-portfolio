@@ -4,13 +4,13 @@
   top: 0; right: 0;
   width: 400px;
   height: 100vh;
-  background: #060c1a;
-  border-left: 1px solid rgba(0,204,255,0.15);
+  background: #07101f;
+  border-left: 1px solid rgba(0,180,220,0.12);
   display: flex;
   flex-direction: column;
   z-index: 9000;
   animation: widyaIn 0.3s cubic-bezier(0.16,1,0.3,1);
-  font-family: 'Courier New', monospace;
+  font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
 }
 
 @keyframes widyaIn {
@@ -20,13 +20,13 @@
 
 /* ===== HEADER ===== */
 .widya-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(0,204,255,0.1);
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(0,180,220,0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  background: rgba(0,6,18,0.8);
+  background: #060e1c;
 }
 
 .widya-branding {
@@ -35,70 +35,83 @@
   gap: 10px;
 }
 
+/* CSS eye icon — no emoji clash */
 .widya-eye-icon {
-  font-size: 20px;
-  filter: drop-shadow(0 0 5px rgba(0,204,255,0.7));
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(0,180,220,0.1);
+  border: 1px solid rgba(0,180,220,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: #00c8f0;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: -1px;
   animation: eyePulse 3s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes eyePulse {
-  0%,100% { filter: drop-shadow(0 0 4px rgba(0,204,255,0.6)); }
-  50%      { filter: drop-shadow(0 0 10px rgba(0,204,255,0.9)); }
+  0%,100% { box-shadow: 0 0 0 rgba(0,200,240,0); border-color: rgba(0,180,220,0.35); }
+  50%      { box-shadow: 0 0 10px rgba(0,200,240,0.25); border-color: rgba(0,200,240,0.6); }
 }
 
 .widya-name {
   font-family: 'Orbitron', 'Courier New', monospace;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 900;
-  color: #00ccff;
+  color: #00c8f0;
   letter-spacing: 2.5px;
 }
 
 .widya-fullname {
-  font-size: 7.5px;
-  color: #1e4055;
-  letter-spacing: 1px;
+  font-size: 8px;
+  color: #1a3a4a;
+  letter-spacing: 0.8px;
   margin-top: 2px;
   text-transform: uppercase;
+  font-family: 'Courier New', monospace;
 }
 
 .widya-close-btn {
   background: none;
-  border: 1px solid rgba(255,0,68,0.35);
-  color: #ff0044;
+  border: 1px solid rgba(200,50,70,0.3);
+  color: #cc3344;
   cursor: pointer;
-  width: 28px; height: 28px;
+  width: 27px; height: 27px;
   border-radius: 4px;
   font-size: 12px;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.18s;
   flex-shrink: 0;
 }
 
 .widya-close-btn:hover {
-  background: rgba(255,0,68,0.12);
-  border-color: #ff0044;
+  background: rgba(200,50,70,0.1);
+  border-color: #cc3344;
 }
 
 /* ===== STATUS BAR ===== */
 .widya-status-bar {
-  padding: 6px 16px;
-  border-bottom: 1px solid rgba(0,204,255,0.06);
+  padding: 5px 16px;
+  border-bottom: 1px solid rgba(0,180,220,0.06);
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 9px;
-  color: #1e4055;
+  color: #1a3a4a;
   letter-spacing: 1px;
   flex-shrink: 0;
+  font-family: 'Courier New', monospace;
+  background: #060e1c;
 }
 
 .widya-status-dot {
   width: 5px; height: 5px;
   border-radius: 50%;
-  background: #00ffcc;
-  box-shadow: 0 0 4px #00ffcc;
-  animation: eyePulse 2s ease-in-out infinite;
+  background: #00e0aa;
+  box-shadow: 0 0 4px #00e0aa;
+  animation: eyePulse 2.5s ease-in-out infinite;
 }
 
 /* ===== CHAT AREA ===== */
@@ -106,39 +119,42 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 14px;
+  padding: 14px 13px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0,204,255,0.1) transparent;
+  scrollbar-color: rgba(0,180,220,0.1) transparent;
+  background: #07101f;
 }
 
 .widya-chat-area::-webkit-scrollbar { width: 3px; }
-.widya-chat-area::-webkit-scrollbar-thumb { background: rgba(0,204,255,0.15); border-radius: 2px; }
+.widya-chat-area::-webkit-scrollbar-thumb { background: rgba(0,180,220,0.15); border-radius: 2px; }
 
 /* ===== MESSAGES ===== */
-/* --- WIDYA message (left) --- */
 .widya-msg {
   display: flex;
   gap: 8px;
   align-items: flex-start;
   max-width: 100%;
-  animation: msgIn 0.25s ease;
+  animation: msgIn 0.22s ease;
 }
 
 @keyframes msgIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(5px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .widya-msg-avatar {
   width: 26px; height: 26px;
   border-radius: 50%;
-  background: rgba(0,204,255,0.08);
-  border: 1px solid rgba(0,204,255,0.25);
+  background: rgba(0,180,220,0.08);
+  border: 1px solid rgba(0,180,220,0.22);
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #00c8f0;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -146,55 +162,59 @@
 .widya-msg-body {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .widya-msg-text {
-  background: rgba(0,14,32,0.7);
-  border: 1px solid rgba(0,204,255,0.1);
+  background: #0d1a2e;
+  border: 1px solid rgba(0,180,220,0.1);
   border-radius: 0 10px 10px 10px;
   padding: 10px 13px;
-  font-size: 12px;
-  color: #7aa8c0;
-  line-height: 1.65;
+  font-size: 13px;
+  color: #8ab8cc;
+  line-height: 1.6;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-/* --- User message (right) --- */
 .user-msg {
   display: flex;
   justify-content: flex-end;
-  animation: msgIn 0.25s ease;
+  animation: msgIn 0.22s ease;
 }
 
 .user-msg-bubble {
-  background: rgba(0,60,100,0.5);
-  border: 1px solid rgba(0,204,255,0.2);
+  background: #0f2035;
+  border: 1px solid rgba(0,180,220,0.2);
   border-radius: 10px 0 10px 10px;
   padding: 9px 13px;
-  font-size: 12px;
-  color: #a0c8e0;
-  max-width: 78%;
+  font-size: 13px;
+  color: #90bace;
+  max-width: 80%;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.5;
 }
 
-/* ===== DATA CARDS (inline in chat) ===== */
+/* ===== DATA CARDS ===== */
 .widya-data-card {
-  margin-top: 8px;
-  background: rgba(0,10,24,0.6);
-  border: 1px solid rgba(0,204,255,0.1);
+  background: #0a1524;
+  border: 1px solid rgba(0,180,220,0.1);
   border-radius: 8px;
   padding: 12px;
   overflow: hidden;
 }
 
 .widya-data-title {
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 700;
-  color: #1e4a5a;
+  color: #1a3a4a;
   letter-spacing: 2px;
   margin-bottom: 10px;
-  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
 }
 
-/* Risk card */
+/* Risk */
 .widya-risk-row {
   display: flex;
   align-items: center;
@@ -212,9 +232,10 @@
 
 .widya-risk-sub {
   font-size: 9px;
-  color: #1e4055;
-  letter-spacing: 1.5px;
-  margin-top: 4px;
+  color: #1a3a4a;
+  letter-spacing: 1px;
+  margin-top: 5px;
+  font-family: 'Courier New', monospace;
 }
 
 /* Chart row */
@@ -236,7 +257,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .widya-leg-dot {
@@ -245,9 +266,9 @@
   flex-shrink: 0;
 }
 
-.widya-leg-label { color: #6a90a8; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.widya-leg-count { color: #8ab4c8; font-weight: 700; }
-.widya-leg-pct   { color: #1e4055; font-size: 9px; min-width: 26px; text-align: right; }
+.widya-leg-label { color: #4e7a90; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Segoe UI', system-ui, sans-serif; }
+.widya-leg-count { color: #7aacbf; font-weight: 600; font-family: 'Courier New', monospace; }
+.widya-leg-pct   { color: #1a3a4a; font-size: 9px; min-width: 26px; text-align: right; font-family: 'Courier New', monospace; }
 
 /* HBar */
 .widya-hbar {
@@ -258,13 +279,14 @@
 }
 
 .widya-hbar-label {
-  font-size: 10px;
-  color: #4a7a90;
+  font-size: 11px;
+  color: #3e6a80;
   min-width: 82px;
   flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .widya-hbar-track {
@@ -283,21 +305,23 @@
 
 .widya-hbar-val {
   font-size: 10px;
-  color: #6a90a8;
-  font-weight: 700;
+  color: #4e7a90;
+  font-weight: 600;
   min-width: 16px;
   text-align: right;
+  font-family: 'Courier New', monospace;
 }
 
 /* Brief */
 .widya-brief-text {
-  font-size: 11.5px;
-  color: #6a90a8;
-  line-height: 1.7;
+  font-size: 12.5px;
+  color: #5e90a8;
+  line-height: 1.75;
   font-style: italic;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Recommendations */
+/* Recs */
 .widya-recs {
   list-style: none;
   padding: 0; margin: 0;
@@ -308,19 +332,20 @@
 
 .widya-recs li {
   display: flex;
-  gap: 8px;
-  font-size: 11px;
-  color: #6a90a8;
+  gap: 10px;
+  font-size: 12px;
+  color: #5e90a8;
   line-height: 1.55;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .widya-rec-num {
-  font-family: 'Orbitron', monospace;
+  font-family: 'Courier New', monospace;
   font-size: 9px;
-  color: #00ccff;
+  color: #00c8f0;
   width: 16px;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 /* Timeline */
@@ -330,7 +355,7 @@
   display: flex;
   gap: 10px;
   padding: 7px 0;
-  border-bottom: 1px solid rgba(0,204,255,0.05);
+  border-bottom: 1px solid rgba(0,180,220,0.05);
   align-items: flex-start;
 }
 
@@ -346,42 +371,44 @@
 .widya-tl-body { flex: 1; min-width: 0; }
 
 .widya-tl-title {
-  font-size: 10.5px;
-  color: #7aa8c0;
+  font-size: 11.5px;
+  color: #6a9ab0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .widya-tl-desc {
-  font-size: 9px;
-  color: #2a5060;
+  font-size: 10px;
+  color: #22404e;
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .widya-tl-time {
   font-size: 9px;
-  color: #1e4055;
+  color: #1a3a4a;
   flex-shrink: 0;
+  font-family: 'Courier New', monospace;
 }
 
-/* Typing indicator */
+/* Typing dots */
 .widya-typing {
   display: flex;
   gap: 8px;
   align-items: center;
-  padding: 6px 0;
   animation: msgIn 0.2s ease;
 }
 
 .widya-typing-dots {
   display: flex;
   gap: 4px;
-  background: rgba(0,14,32,0.7);
-  border: 1px solid rgba(0,204,255,0.1);
+  background: #0d1a2e;
+  border: 1px solid rgba(0,180,220,0.1);
   border-radius: 10px;
   padding: 8px 12px;
 }
@@ -389,8 +416,8 @@
 .widya-typing-dots span {
   width: 5px; height: 5px;
   border-radius: 50%;
-  background: #00ccff;
-  opacity: 0.4;
+  background: #00c8f0;
+  opacity: 0.3;
   animation: dotBounce 1.2s ease-in-out infinite;
 }
 
@@ -398,86 +425,92 @@
 .widya-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes dotBounce {
-  0%,80%,100% { transform: translateY(0); opacity: 0.3; }
-  40%          { transform: translateY(-4px); opacity: 1; }
+  0%,80%,100% { transform: translateY(0); opacity: 0.25; }
+  40%          { transform: translateY(-4px); opacity: 0.9; }
 }
 
-/* ===== QUICK CHIPS ===== */
+/* ===== CHIPS ===== */
 .widya-chips-wrap {
-  padding: 10px 14px 8px;
-  border-top: 1px solid rgba(0,204,255,0.07);
+  padding: 9px 13px 7px;
+  border-top: 1px solid rgba(0,180,220,0.07);
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
-  background: rgba(0,6,18,0.6);
+  background: #060e1c;
 }
 
 .widya-chip {
-  background: rgba(0,20,40,0.7);
-  border: 1px solid rgba(0,204,255,0.15);
-  color: #4a7a90;
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  padding: 5px 11px;
+  background: #0a1524;
+  border: 1px solid rgba(0,180,220,0.14);
+  color: #3a6878;
+  font-size: 10.5px;
+  padding: 4px 10px;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.16s;
   white-space: nowrap;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .widya-chip:hover {
-  border-color: rgba(0,204,255,0.4);
-  color: #00ccff;
-  background: rgba(0,40,80,0.6);
+  border-color: rgba(0,200,240,0.4);
+  color: #00c8f0;
+  background: #0d2030;
+}
+
+.widya-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* ===== INPUT BAR ===== */
 .widya-input-bar {
-  padding: 10px 12px 14px;
+  padding: 8px 12px 12px;
   display: flex;
-  gap: 8px;
+  gap: 7px;
   align-items: center;
   flex-shrink: 0;
-  background: rgba(0,6,18,0.6);
+  background: #060e1c;
 }
 
 .widya-input {
   flex: 1;
-  background: rgba(0,14,30,0.8);
-  border: 1px solid rgba(0,204,255,0.15);
+  background: #0a1524;
+  border: 1px solid rgba(0,180,220,0.14);
   border-radius: 6px;
-  color: #8ab4c8;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
+  color: #7aaabf;
+  font-size: 12.5px;
   padding: 9px 12px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.18s;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-.widya-input::placeholder { color: #1e4055; }
+.widya-input::placeholder { color: #1a3040; }
 
 .widya-input:focus {
-  border-color: rgba(0,204,255,0.35);
-  background: rgba(0,18,38,0.9);
+  border-color: rgba(0,200,240,0.3);
+  background: #0c1828;
 }
 
 .widya-send-btn {
-  background: rgba(0,40,80,0.7);
-  border: 1px solid rgba(0,204,255,0.3);
-  color: #00ccff;
+  background: #0a1d30;
+  border: 1px solid rgba(0,180,220,0.28);
+  color: #00c8f0;
   font-size: 14px;
   width: 36px; height: 36px;
   border-radius: 6px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.18s;
+  transition: all 0.16s;
   flex-shrink: 0;
+  font-family: 'Courier New', monospace;
 }
 
 .widya-send-btn:hover {
-  background: rgba(0,60,120,0.7);
-  border-color: #00ccff;
+  background: #0f2840;
+  border-color: #00c8f0;
 }
 
 .widya-send-btn:disabled {
@@ -485,7 +518,7 @@
   cursor: not-allowed;
 }
 
-/* ===== GAUGE (compact) ===== */
+/* ===== GAUGE ===== */
 .widya-gauge { display: flex; justify-content: center; }
 
 /* ===== RESPONSIVE ===== */

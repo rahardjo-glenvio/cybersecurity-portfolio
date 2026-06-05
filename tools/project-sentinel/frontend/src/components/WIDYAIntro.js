@@ -61,7 +61,7 @@ function ChatMsg({ text, highlight, speed = 28, delay = 0, onDone }) {
 
   return (
     <div className="widya-chat-msg">
-      <div className="widya-chat-avatar">👁</div>
+      <div className="widya-chat-avatar">AI</div>
       <div className={`widya-chat-bubble ${highlight ? 'highlight' : ''}`}>
         {displayed}
         {!done && <span className="widya-cursor" />}
@@ -72,9 +72,9 @@ function ChatMsg({ text, highlight, speed = 28, delay = 0, onDone }) {
 
 // ─── Chat sequence config ─────────────────────────────────────────────────────
 const MESSAGES = [
-  { id: 'greeting',  text: 'Halo! Aku WIDYA 👁',                           highlight: true,  speed: 45  },
+  { id: 'greeting',  text: 'Halo! Aku WIDYA.',                             highlight: true,  speed: 45  },
   { id: 'fullname',  text: 'Wazuh Intelligent Defense Yield Analyzer.',    highlight: false, speed: 22  },
-  { id: 'desc',      text: 'Aku dirancang untuk menganalisis ancaman keamanan jaringanmu secara real-time — mulai dari pola serangan, asal negara, hingga teknik MITRE ATT&CK yang digunakan.', highlight: false, speed: 18 },
+  { id: 'desc',      text: 'Aku dirancang untuk menganalisis ancaman keamanan jaringanmu secara real-time, mulai dari pola serangan, asal negara, hingga teknik MITRE ATT&CK yang digunakan.', highlight: false, speed: 18 },
   { id: 'ready',     text: 'Siap menjalankan analisis mendalam. Klik tombol di bawah untuk mulai.', highlight: false, speed: 22 },
 ];
 
@@ -126,7 +126,7 @@ export default function WIDYAIntro({ alertCount, onComplete }) {
           {/* Initial typing dots */}
           {step === -1 && (
             <div className="widya-chat-msg">
-              <div className="widya-chat-avatar">👁</div>
+              <div className="widya-chat-avatar">AI</div>
               <div className="widya-chat-bubble">
                 <div className="widya-typing-dots">
                   <span /><span /><span />
@@ -150,7 +150,7 @@ export default function WIDYAIntro({ alertCount, onComplete }) {
           {step >= MESSAGES.length - 1 && shownMessages.length === MESSAGES.length && (
             <div className="widya-intro-cta">
               <div className="widya-chat-msg">
-                <div className="widya-chat-avatar">👁</div>
+                <div className="widya-chat-avatar">AI</div>
                 <div className="widya-chat-bubble">
                   Saat ini terdeteksi <b style={{ color: '#00ccff' }}>{alertCount} event</b> aktif yang siap dianalisis.
                 </div>

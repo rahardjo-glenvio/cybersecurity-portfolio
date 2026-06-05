@@ -175,9 +175,9 @@ function buildResponse(cmd, analysis, alerts) {
     ];
   }
   if (cmdLower.includes('halo') || cmdLower.includes('hai') || cmdLower.includes('hello') || cmdLower.includes('hi')) {
-    return [{ type:'text', text:`Halo! 👁 Aku WIDYA, analis ancaman siber yang siap membantumu. Saat ini aku mendeteksi **${analysis.total} event aktif**. Mau aku analisis yang mana dulu?` }];
+    return [{ type:'text', text:`Halo! Aku WIDYA, analis ancaman siber yang siap membantumu. Saat ini aku mendeteksi **${analysis.total} event aktif**. Mau aku analisis yang mana dulu?` }];
   }
-  if (cmdLower.includes('semua') || cmdLower.includes('all') || cmdLower.includes('lengkap')) {
+  if (cmdLower.includes('semua') || cmdLower.includes('all') || cmdLower.includes('lengkap') || cmdLower.includes('laporan')) {
     return [
       { type:'text', text:`Laporan lengkap: ${analysis.total} event, risk score ${analysis.riskScore}, ${analysis.crit} critical, dari ${analysis.countryData.length} negara.` },
       { type:'risk', score: analysis.riskScore, crit: analysis.crit, total: analysis.total },
@@ -186,7 +186,66 @@ function buildResponse(cmd, analysis, alerts) {
       { type:'brief', text: analysis.brief },
     ];
   }
-  return [{ type:'text', text:`Maaf, aku tidak mengerti perintah itu. Coba gunakan tombol di bawah atau ketik: **risk score**, **distribusi serangan**, **top negara**, **mitre**, **threat brief**, **rekomendasi**, atau **timeline**.` }];
+  // ── Free-form NLP ──────────────────────────────────────────────────────────
+  if (cmdLower.includes('bisa') || cmdLower.includes('fitur') || cmdLower.includes('apa saja') || cmdLower.includes('kemampuan') || cmdLower.includes('lakukan')) {
+    return [{ type:'text', text:`Aku bisa membantu kamu dengan:\n\n**◈ Risk Score** — skor risiko sistem 0–100\n**◉ Distribusi Serangan** — jenis vektor serangan + pie chart\n**◎ Top Negara** — negara asal serangan terbanyak\n**▣ MITRE ATT&CK** — teknik yang digunakan penyerang\n**▸ Threat Brief** — ringkasan analisis AI\n**◆ Rekomendasi** — saran tindakan keamanan\n**◷ Timeline** — event serangan terbaru\n\nAtau tanya apapun tentang sistem keamananmu!` }];
+  }
+  if (cmdLower.includes('berapa') && (cmdLower.includes('serang') || cmdLower.includes('event') || cmdLower.includes('total'))) {
+    return [{ type:'text', text:`Total terdeteksi **${analysis.total} security event**, terdiri dari **${analysis.crit} Critical**, **${analysis.sevData.find(s=>s.label==='High')?.value||0} High**, **${analysis.sevData.find(s=>s.label==='Medium')?.value||0} Medium**, dan **${analysis.sevData.find(s=>s.label==='Low')?.value||0} Low**.` }];
+  }
+  if (cmdLower.includes('berapa') && (cmdLower.includes('negara') || cmdLower.includes('asal'))) {
+    return [{ type:'text', text:`Serangan berasal dari **${analysis.countryData.length} negara berbeda**. Terbesar dari **${analysis.topCtry}** dengan ${analysis.countryData[0]?.value} serangan.` }];
+  }
+  if (cmdLower.includes('aman') || cmdLower.includes('bahaya') || cmdLower.includes('status') || cmdLower.includes('kondisi')) {
+    const status = analysis.riskScore >= 70 ? 'dalam kondisi **BERBAHAYA**. Ada ancaman kritis yang perlu segera ditangani!' : analysis.riskScore >= 45 ? 'dalam kondisi **WASPADA**. Ada beberapa ancaman yang perlu diperhatikan.' : analysis.riskScore >= 20 ? 'dalam kondisi **MODERAT**. Pantau terus perkembangannya.' : 'dalam kondisi **AMAN**. Tidak ada ancaman signifikan saat ini.';
+    return [
+      { type:'text', text:`Sistem kamu saat ini ${status} Risk Score: **${analysis.riskScore}/100**.` },
+      { type:'risk', score: analysis.riskScore, crit: analysis.crit, total: analysis.total },
+    ];
+  }
+  if (cmdLower.includes('siapa') || cmdLower.includes('penyerang') || cmdLower.includes('dari mana') || cmdLower.includes('asal')) {
+    return [
+      { type:'text', text:`Penyerang utama berasal dari **${analysis.topCtry}** dengan total **${analysis.countryData[0]?.value} serangan**. Berikut daftar lengkapnya:` },
+      { type:'geo', countryData: analysis.countryData },
+    ];
+  }
+  if (cmdLower.includes('terbanyak') || cmdLower.includes('dominan') || cmdLower.includes('paling') || cmdLower.includes('utama')) {
+    return [
+      { type:'text', text:`Serangan terbanyak menggunakan vektor **${analysis.topSvc}** dengan ${analysis.serviceData[0]?.value} kejadian. Berasal dari **${analysis.topCtry}**.` },
+      { type:'attacks', serviceData: analysis.serviceData, total: analysis.total },
+    ];
+  }
+  if (cmdLower.includes('terakhir') || cmdLower.includes('terbaru') || cmdLower.includes('baru-baru') || cmdLower.includes('recent')) {
+    return [
+      { type:'text', text:`Event terbaru yang terdeteksi:` },
+      { type:'timeline', alerts: alerts.slice(0,6) },
+    ];
+  }
+  if (cmdLower.includes('critical') || cmdLower.includes('kritis') || cmdLower.includes('darurat')) {
+    return [
+      { type:'text', text: analysis.crit > 0 ? `Ada **${analysis.crit} event Critical** yang memerlukan perhatian segera! Eskalasikan ke tim incident response.` : `Tidak ada event Critical saat ini. Sistem relatif aman.` },
+      { type:'severity', sevData: analysis.sevData },
+    ];
+  }
+  if (cmdLower.includes('ssh')) {
+    const sshCount = alerts.filter(a => a.service === 'SSH').length;
+    return [{ type:'text', text:`Terdeteksi **${sshCount} serangan SSH** dari total event. Rekomendasi: nonaktifkan password login, gunakan SSH key-based authentication, dan batasi akses via firewall.` }];
+  }
+  if (cmdLower.includes('terima kasih') || cmdLower.includes('makasih') || cmdLower.includes('thanks') || cmdLower.includes('thx')) {
+    return [{ type:'text', text:`Sama-sama! Aku selalu siap membantu menganalisis ancaman. Tetap waspada ya!` }];
+  }
+  if (cmdLower.includes('widya') && (cmdLower.includes('kamu') || cmdLower.includes('siapa') || cmdLower.includes('apa'))) {
+    return [{ type:'text', text:`Aku **WIDYA** — Wazuh Intelligent Defense Yield Analyzer. Sistem analisis ancaman siber yang terintegrasi dengan Wazuh SIEM. Aku memproses security event secara real-time dan memberikan insight berbasis data untuk membantu kamu memahami dan merespons ancaman.` }];
+  }
+  // Generic catch-all with smart routing
+  const hasNum = /\d/.test(cmdLower);
+  if (cmdLower.includes('ip') || hasNum) {
+    const matchedAlert = alerts.find(a => a.source_ip && cmdLower.includes(a.source_ip));
+    if (matchedAlert) {
+      return [{ type:'text', text:`IP **${matchedAlert.source_ip}** berasal dari **${matchedAlert.source_city}, ${matchedAlert.source_country}**. Terdeteksi melakukan **${matchedAlert.rule_description}** via **${matchedAlert.service}:${matchedAlert.port||'?'}**. Level: ${matchedAlert.rule_level}.` }];
+    }
+  }
+  return [{ type:'text', text:`Hmm, aku kurang yakin maksud pertanyaan itu. Coba tanya dengan kata kunci seperti:\n\n"**risk score**", "**serangan terbanyak**", "**asal negara**", "**aman tidak**", "**event terbaru**", atau "**apa yang bisa kamu lakukan**".` }];
 }
 
 // ─── Render Response Item ─────────────────────────────────────────────────────
@@ -302,14 +361,14 @@ function ResponseItem({ item }) {
 
 // ─── Quick Chips ──────────────────────────────────────────────────────────────
 const CHIPS = [
-  { label:'📊 Risk Score',    cmd:'risk score'          },
-  { label:'🥧 Serangan',      cmd:'distribusi serangan' },
-  { label:'🌍 Negara',        cmd:'top negara'          },
-  { label:'🎯 MITRE',         cmd:'mitre'               },
-  { label:'📝 Brief',         cmd:'threat brief'        },
-  { label:'💡 Saran',         cmd:'rekomendasi'         },
-  { label:'📅 Timeline',      cmd:'timeline'            },
-  { label:'⚡ Severity',      cmd:'severity'            },
+  { label:'◈ Risk Score',   cmd:'risk score'          },
+  { label:'◉ Serangan',     cmd:'distribusi serangan' },
+  { label:'◎ Negara',       cmd:'top negara'          },
+  { label:'▣ MITRE',        cmd:'mitre'               },
+  { label:'▸ Brief',        cmd:'threat brief'        },
+  { label:'◆ Saran',        cmd:'rekomendasi'         },
+  { label:'◷ Timeline',     cmd:'timeline'            },
+  { label:'▲ Severity',     cmd:'severity'            },
 ];
 
 // ─── Main WIDYA Component ─────────────────────────────────────────────────────
@@ -328,7 +387,7 @@ export default function WIDYA({ alerts, onClose }) {
       const n = alerts?.length || 0;
       setMessages([{
         from: 'widya',
-        items: [{ type:'text', text:`Analisis dimulai 👁 Aku mendeteksi **${n} event aktif** saat ini. Pilih topik di bawah atau ketik pertanyaan kamu.` }]
+        items: [{ type:'text', text:`Analisis dimulai. Aku mendeteksi **${n} event aktif** saat ini. Pilih topik di bawah atau ketik pertanyaan kamu.` }]
       }]);
     }
   }, [showIntro, alerts?.length]);
@@ -405,7 +464,7 @@ export default function WIDYA({ alerts, onClose }) {
             </div>
           ) : (
             <div key={i} className="widya-msg">
-              <div className="widya-msg-avatar">👁</div>
+              <div className="widya-msg-avatar">AI</div>
               <div className="widya-msg-body">
                 {msg.items.map((item, j) => (
                   <ResponseItem key={j} item={item} />
