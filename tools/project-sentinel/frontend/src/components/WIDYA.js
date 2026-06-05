@@ -2,6 +2,25 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import WIDYAIntro from './WIDYAIntro';
 import './WIDYA.css';
 
+// ─── Reusable avatar with photo + fallback ────────────────────────────────────
+function WIDYAAvatar({ size = 26 }) {
+  const [imgOk, setImgOk] = useState(true);
+  return (
+    <div className="widya-avatar" style={{ width: size, height: size, flexShrink: 0 }}>
+      {imgOk ? (
+        <img
+          src="/widya-face.png"
+          alt="WIDYA"
+          className="widya-avatar-img"
+          onError={() => setImgOk(false)}
+        />
+      ) : (
+        <span className="widya-avatar-fallback">AI</span>
+      )}
+    </div>
+  );
+}
+
 // ─── Colors ───────────────────────────────────────────────────────────────────
 const SVC_COLOR = {
   SSH:'#00ccff', HTTP:'#ff8800', HTTPS:'#ff8800', MySQL:'#ff0044',
@@ -438,7 +457,7 @@ export default function WIDYA({ alerts, onClose }) {
       {/* Header */}
       <div className="widya-header">
         <div className="widya-branding">
-          <div className="widya-eye-icon">👁</div>
+          <WIDYAAvatar size={34} />
           <div>
             <div className="widya-name">WIDYA</div>
             <div className="widya-fullname">Wazuh Intelligent Defense Yield Analyzer</div>
@@ -464,7 +483,7 @@ export default function WIDYA({ alerts, onClose }) {
             </div>
           ) : (
             <div key={i} className="widya-msg">
-              <div className="widya-msg-avatar">AI</div>
+              <WIDYAAvatar size={26} />
               <div className="widya-msg-body">
                 {msg.items.map((item, j) => (
                   <ResponseItem key={j} item={item} />
@@ -476,7 +495,7 @@ export default function WIDYA({ alerts, onClose }) {
 
         {isTyping && (
           <div className="widya-typing">
-            <div className="widya-msg-avatar" style={{ width:26, height:26, borderRadius:'50%', background:'rgba(0,204,255,0.08)', border:'1px solid rgba(0,204,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12 }}>👁</div>
+            <WIDYAAvatar size={26} />
             <div className="widya-typing-dots">
               <span /><span /><span />
             </div>

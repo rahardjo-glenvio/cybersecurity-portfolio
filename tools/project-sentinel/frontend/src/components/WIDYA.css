@@ -35,20 +35,12 @@
   gap: 10px;
 }
 
-/* CSS eye icon — no emoji clash */
-.widya-eye-icon {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(0,180,220,0.1);
-  border: 1px solid rgba(0,180,220,0.35);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  color: #00c8f0;
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
-  letter-spacing: -1px;
+/* Header avatar size override */
+.widya-header .widya-avatar {
+  width: 34px !important;
+  height: 34px !important;
+  margin-top: 0;
   animation: eyePulse 3s ease-in-out infinite;
-  flex-shrink: 0;
 }
 
 @keyframes eyePulse {
@@ -89,6 +81,36 @@
 .widya-close-btn:hover {
   background: rgba(200,50,70,0.1);
   border-color: #cc3344;
+}
+
+/* ===== AVATAR ===== */
+.widya-avatar {
+  border-radius: 50%;
+  overflow: hidden;
+  background: #050912;
+  border: 1px solid rgba(0,180,220,0.25);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.widya-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  display: block;
+}
+
+.widya-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #00c8f0;
 }
 
 /* ===== STATUS BAR ===== */
