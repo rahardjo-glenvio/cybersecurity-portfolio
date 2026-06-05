@@ -2,7 +2,7 @@
 
 # 🛡️ SENTINEL SOC Dashboard
 
-**Real-time Security Operations Center — built on Wazuh SIEM**
+**Real-time Security Operations Center built on Wazuh SIEM**
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Express_5-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
@@ -25,7 +25,7 @@
 
 ---
 
-### 🗺️ Live Attack Map — Full Dashboard
+### 🗺️ Live Attack Map: Full Dashboard
 ![Dashboard Overview](docs/screenshots/dashboard.png)
 
 > Real-time world map showing attack arcs from 12 countries converging on the target server. Color-coded by severity: 🔴 Critical · 🟠 High · 🟡 Medium.
@@ -35,7 +35,7 @@
 ### 🎯 Target Server Close-up
 ![Map Close-up](docs/screenshots/map-closeup.png)
 
-> Zoomed view of the defended server node with all inbound attack vectors — SSH brute force, SQL Injection, RDP, MySQL attacks.
+> Zoomed view of the defended server node with all inbound attack vectors: SSH brute force, SQL Injection, RDP, MySQL attacks.
 
 ---
 
@@ -53,9 +53,9 @@
 | 🗺️ **Live Attack Map** | Interactive Leaflet.js world map with animated arc trajectories and traveling pulse dots |
 | 📡 **Wazuh Integration** | Direct connection to Wazuh Manager API & OpenSearch Indexer (last 24h alerts) |
 | 🌍 **GeoIP Enrichment** | Automatic IP geolocation via `ip-api.com` for all external source IPs |
-| ⚡ **Severity HUD** | Real-time counters — Threats / Critical / High / Medium with glowing neon indicators |
+| ⚡ **Severity HUD** | Real-time counters for Threats / Critical / High / Medium with glowing neon indicators |
 | 🔍 **Smart Search** | Full-text search with auto-complete across IP, country, service, MITRE technique |
-| 🎭 **Demo Mode** | 12 built-in global attack scenarios — no Wazuh needed to try it |
+| 🎭 **Demo Mode** | 12 built-in global attack scenarios, no Wazuh needed to try it |
 | 🔐 **JWT Auth** | Secure login with bcrypt password hashing and token expiry |
 | 🎨 **Cyberpunk UI** | Orbitron font · Scanline overlay · Animated scan beam · Glassmorphism HUD |
 | 📊 **MITRE ATT&CK** | Every alert tagged with relevant technique (Brute Force, SQL Injection, etc.) |
@@ -90,7 +90,7 @@
 sentinel-soc-dashboard/
 │
 ├── backend/
-│   ├── server.js              # API routes — alert fetch, GeoIP, demo data
+│   ├── server.js              # API routes: alert fetch, GeoIP, demo data
 │   ├── auth.js                # JWT middleware & login/logout routes
 │   ├── scripts/
 │   │   └── generateHash.js    # Utility to bcrypt-hash admin password
@@ -123,7 +123,7 @@ sentinel-soc-dashboard/
 
 ### Prerequisites
 - Node.js 18+
-- Wazuh 4.x *(optional — demo mode works without it)*
+- Wazuh 4.x *(optional, demo mode works without it)*
 
 ### 1. Clone & Install
 
@@ -151,10 +151,10 @@ node backend/scripts/generateHash.js
 ### 3. Run
 
 ```bash
-# Terminal 1 — Backend API (port 3001)
+# Terminal 1: Backend API (port 3001)
 cd backend && node server.js
 
-# Terminal 2 — Frontend dev server (port 3000)
+# Terminal 2: Frontend dev server (port 3000)
 cd frontend && npm start
 ```
 
@@ -176,7 +176,7 @@ Open `http://localhost:3000` and login with your admin credentials.
 
 ## 🎮 Demo Mode
 
-No Wazuh? No problem. Switch to **Demo Mode** using the top-right dropdown — no setup needed.
+No Wazuh? No problem. Switch to **Demo Mode** using the top-right dropdown, no setup needed.
 
 Includes 12 pre-configured global attack scenarios:
 
@@ -199,13 +199,13 @@ Includes 12 pre-configured global attack scenarios:
 
 ## 🔒 Security Design
 
-- ✅ All credentials via **environment variables** — nothing hardcoded in source
+- ✅ All credentials via **environment variables**, nothing hardcoded in source
 - ✅ JWT tokens with expiry + server-side invalidation on logout
 - ✅ bcrypt password hashing (cost factor 12)
 - ✅ Rate limiting via `express-rate-limit`
 - ✅ Security headers via `helmet`
 - ✅ CORS restricted to local network
-- ⚠️ Wazuh HTTPS uses `rejectUnauthorized: false` — internal network use only
+- ⚠️ Wazuh HTTPS uses `rejectUnauthorized: false` (internal network use only)
 
 ---
 
@@ -237,7 +237,7 @@ Includes 12 pre-configured global attack scenarios:
 
 ## 📄 License
 
-MIT — free to use, fork, and adapt for your own homelab.
+MIT License, free to use, fork, and adapt for your own homelab.
 
 ---
 
