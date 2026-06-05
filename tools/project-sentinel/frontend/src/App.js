@@ -3,6 +3,7 @@ import axios from 'axios';
 import Map2D from './components/Map2D';
 import AlertsTable from './components/AlertsTable';
 import Login from './components/Login';
+import WIDYA from './components/WIDYA';
 import { auth } from './utils/auth';
 import './App.css';
 
@@ -15,6 +16,7 @@ function App() {
   const [dataSource, setDataSource] = useState('demo');
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [widyaOpen, setWidyaOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -131,6 +133,14 @@ function App() {
     <div className="App">
       <div className="app-header">
         <h1>Project SENTINEL</h1>
+          <button
+            className={`widya-trigger-btn ${widyaOpen ? 'active' : ''}`}
+            onClick={() => setWidyaOpen(prev => !prev)}
+            title="Open WIDYA AI Analyzer"
+          >
+            <span className="widya-trigger-eye">👁</span>
+            <span>WIDYA AI</span>
+          </button>
         <div className="menu-dropdown" ref={menuRef}>
           <button
             className={`menu-trigger ${menuOpen ? 'open' : ''}`}
@@ -176,6 +186,10 @@ function App() {
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
       />
+
+      {widyaOpen && (
+        <WIDYA alerts={filteredAlerts} onClose={() => setWidyaOpen(false)} />
+      )}
     </div>
   );
 }
