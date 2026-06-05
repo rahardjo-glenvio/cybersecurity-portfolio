@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import WIDYAIntro from './WIDYAIntro';
 import './WIDYA.css';
 
 // ─── Color maps ───────────────────────────────────────────────────────────────
@@ -128,6 +129,7 @@ function generateRecs(alerts, svcData) {
 
 // ─── Main WIDYA Component ─────────────────────────────────────────────────────
 export default function WIDYA({ alerts, onClose }) {
+  const [showIntro, setShowIntro] = useState(true);
   const [scanning, setScanning] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -197,6 +199,15 @@ export default function WIDYA({ alerts, onClose }) {
     { id: 'geo',      label: 'GEO'      },
     { id: 'intel',    label: 'INTEL'    },
   ];
+
+  if (showIntro) {
+    return (
+      <WIDYAIntro
+        alertCount={alerts?.length || 0}
+        onComplete={() => setShowIntro(false)}
+      />
+    );
+  }
 
   return (
     <div className="widya-panel">
