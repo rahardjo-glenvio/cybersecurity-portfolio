@@ -1,5 +1,7 @@
 # SOCIVUL
 
+![SOCIVUL Banner](docs/banner.png)
+
 **Intentionally Vulnerable Social Media Lab for Web Penetration Testing**
 
 SOCIVUL is a deliberately vulnerable Instagram-like web application built for web application security training, penetration testing practice, and CTF-style challenges. It is designed to look and feel like a real social media platform so that students practice thinking like actual attackers, not just following guided tutorials.
