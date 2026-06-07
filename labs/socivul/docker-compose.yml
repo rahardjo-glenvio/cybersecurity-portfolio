@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  socivul:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app/static/uploads:/app/app/static/uploads
+    environment:
+      - FLASK_ENV=development
+    restart: unless-stopped

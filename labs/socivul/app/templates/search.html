@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Search • Socivul{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:600px;">
+  <div style="margin-bottom:20px;">
+    <form method="GET" action="/search" style="display:flex; gap:10px;">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search users or captions…"
+        style="flex:1; border:1px solid #dbdbdb; border-radius:8px; padding:9px 14px; font-size:14px; outline:none; background:#fafafa;">
+      <button type="submit" class="btn btn-primary" style="width:auto; padding:9px 20px;">Search</button>
+    </form>
+  </div>
+
+  {% if q %}
+  <div id="tag-display" class="tag-display"></div>
+
+  {% if results %}
+  <div class="search-header"><h3>People</h3></div>
+  <div class="search-results">
+    {% for result in results %}
+    <div class="search-result-item">
+      <a href="/profile/{{ result.username }}">
+        <img src="/static/uploads/{{ result.profile_pic }}" alt="{{ result.username }}" class="avatar avatar-md" onerror="this.src='/static/uploads/default.jpg'">
+      </a>
+      <div class="search-result-info">
+        <div class="username"><a href="/profile/{{ result.username }}">{{ result.username }}</a></div>
+        <div class="sub">{{ result.bio[:40] if result.bio else 'Socivul user' }}</div>
+      </div>
+      <form method="POST" action="/follow/{{ result.id }}">
+        <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if post_results %}
+  <div class="search-header" style="margin-top:20px;"><h3>Posts</h3></div>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:3px;">
+    {% for post in post_results %}
+    <div class="profile-post-thumb">
+      <a href="/post/{{ post.id }}">
+        <img src="/static/uploads/{{ post.image_path }}" alt="Post" onerror="this.src='/static/uploads/default_post.jpg'" loading="lazy">
+        <div class="overlay">
+          <span>{{ post.username }}</span>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not results and not post_results %}
+  <div style="text-align:center; padding:40px 0; color:#8e8e8e;">
+    <p style="font-size:16px; font-weight:600; margin-bottom:8px;">No results for "{{ q | safe }}"</p>
+    <p style="font-size:14px;">Try searching for a username or caption.</p>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div style="text-align:center; padding:60px 0; color:#8e8e8e;">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" style="width:64px;height:64px;margin:0 auto 16px;display:block;">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+    </svg>
+    <p style="font-size:16px; font-weight:600;">Search Socivul</p>
+    <p style="font-size:14px; margin-top:4px;">Find users and posts.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

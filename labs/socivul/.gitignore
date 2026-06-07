@@ -1,0 +1,25 @@
+# Runtime sessions - jangan di-push
+sessions/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+
+# Stray uploads (bukan bagian dari seed)
+app/static/uploads/*.png
+app/static/uploads/download.jpg
+
+# IDE
+.vscode/
+.idea/
+*.swp

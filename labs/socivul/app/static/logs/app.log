@@ -1,0 +1,31 @@
+[2025-05-31 00:02:11] INFO  werkzeug: Starting Socivul v1.0 (debug=False)
+[2025-05-31 00:02:12] INFO  database: Connected to session DB
+[2025-05-31 00:02:12] INFO  werkzeug: Running on http://0.0.0.0:5000
+
+[2025-05-31 08:14:03] INFO  werkzeug: 10.10.10.4 - "GET / HTTP/1.1" 302 -
+[2025-05-31 08:14:03] INFO  werkzeug: 10.10.10.4 - "GET /login HTTP/1.1" 200 -
+[2025-05-31 08:14:17] INFO  auth: Login attempt — username=alice
+[2025-05-31 08:14:17] INFO  auth: Login successful — user_id=1 role=user
+[2025-05-31 08:14:17] INFO  werkzeug: 10.10.10.4 - "POST /login HTTP/1.1" 302 -
+
+[2025-05-31 11:32:50] INFO  werkzeug: 10.10.10.9 - "GET /login HTTP/1.1" 200 -
+[2025-05-31 11:32:58] INFO  auth: Login attempt — username=bob
+[2025-05-31 11:32:58] INFO  auth: Login successful — user_id=2 role=user
+[2025-05-31 11:32:58] INFO  werkzeug: 10.10.10.9 - "POST /login HTTP/1.1" 302 -
+
+[2025-05-31 14:55:22] WARNING auth: Multiple failed login attempts from 10.10.10.22
+[2025-05-31 14:55:22] INFO  werkzeug: 10.10.10.22 - "POST /login HTTP/1.1" 200 -
+[2025-05-31 14:55:31] INFO  werkzeug: 10.10.10.22 - "POST /login HTTP/1.1" 200 -
+
+[2025-06-01 03:07:44] INFO  werkzeug: 127.0.0.1 - "GET /admin/dashboard HTTP/1.1" 200 -
+[2025-06-01 03:07:51] INFO  admin: Config reload triggered by admin
+[2025-06-01 03:07:51] DEBUG auth: Verifying admin session — pw_hash=0192023a7bbd73250516f069df18b500
+[2025-06-01 03:07:51] INFO  auth: Admin session verified — user_id=5
+
+[2025-06-01 09:18:04] INFO  werkzeug: 10.10.10.4 - "GET /feed HTTP/1.1" 200 -
+[2025-06-01 09:18:21] INFO  werkzeug: 10.10.10.4 - "POST /post/12/like HTTP/1.1" 200 -
+[2025-06-01 09:19:05] INFO  werkzeug: 10.10.10.4 - "POST /post/12/comment HTTP/1.1" 302 -
+
+[2025-06-02 21:44:30] WARNING werkzeug: 10.10.10.55 - "GET /admin/dashboard HTTP/1.1" 302 -
+[2025-06-02 21:44:30] WARNING auth: Unauthenticated access attempt to /admin/dashboard from 10.10.10.55
+[2025-06-02 21:44:35] WARNING auth: Unauthenticated access attempt to /admin/dashboard from 10.10.10.55

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard • Socivul{% endblock %}
+
+{% block content %}
+<div class="page-wrapper admin-wrapper">
+  <div class="admin-header">
+    <h1>Admin Dashboard</h1>
+    <p style="color:#8e8e8e; font-size:14px; margin-top:4px;">Manage users, posts, and platform activity.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="number">{{ user_count }}</div>
+      <div class="label">Total Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">{{ post_count }}</div>
+      <div class="label">Total Posts</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:16px; font-weight:600; margin-bottom:12px;">Users</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Joined</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td>
+          <a href="/profile/{{ u.username }}" style="font-weight:600;">
+            <img src="/static/uploads/{{ u.profile_pic }}" alt="" class="avatar avatar-sm" style="vertical-align:middle; margin-right:8px;" onerror="this.src='/static/uploads/default.jpg'">
+            {{ u.username }}
+          </a>
+        </td>
+        <td style="color:#8e8e8e;">{{ u.email }}</td>
+        <td><span class="role-badge {{ u.role }}">{{ u.role }}</span></td>
+        <td style="color:#8e8e8e;">{{ u.created_at }}</td>
+        <td>
+          <form method="POST" action="/admin/users/{{ u.id }}/promote" style="display:inline;">
+            <button type="submit" class="btn btn-outline btn-sm">Promote</button>
+          </form>
+          <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this user?');">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2 style="font-size:16px; font-weight:600; margin-bottom:12px;">Recent Posts</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Caption</th>
+        <th>Posted</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+      <tr>
+        <td>{{ post.id }}</td>
+        <td><a href="/profile/{{ post.username }}" style="font-weight:600;">{{ post.username }}</a></td>
+        <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ post.caption }}</td>
+        <td style="color:#8e8e8e;">{{ post.created_at }}</td>
+        <td>
+          <a href="/post/{{ post.id }}" class="btn btn-outline btn-sm">View</a>
+          <form method="POST" action="/admin/posts/{{ post.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this post?');">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
