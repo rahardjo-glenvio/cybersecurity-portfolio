@@ -50,12 +50,12 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🗺️ **Live Attack Map** | Interactive Leaflet.js world map with smooth animated arcs — multiple simultaneous traveling pulses per route, speed/intensity scaled by alert severity |
-| 📡 **Wazuh Integration** | Reads directly from Wazuh's `alerts.json` in real-time — no indexer/filebeat dependency, always up to date |
+| 🗺️ **Live Attack Map** | Interactive Leaflet.js world map with smooth animated arcs - multiple simultaneous traveling pulses per route, speed/intensity scaled by alert severity |
+| 📡 **Wazuh Integration** | Reads directly from Wazuh's `alerts.json` in real-time - no indexer/filebeat dependency, always up to date |
 | 🌍 **GeoIP Enrichment** | Automatic IP geolocation via `ip-api.com` for all external source IPs |
 | ⚡ **Severity HUD** | Real-time counters for Threats / Critical / High / Medium with glowing neon indicators |
 | 🔍 **Smart Search** | Full-text search with auto-complete across IP, country, service, MITRE technique |
-| 🤖 **WIDYA AI Analyst** | In-dashboard threat analyst chatbot — risk scoring, MITRE mapping, geo analysis, and detailed mitigation guidance generated from live alert data |
+| 🤖 **JAGAD AI Analyst** | In-dashboard threat analyst chatbot - risk scoring, MITRE mapping, geo analysis, and detailed mitigation guidance generated from live alert data |
 | 🎭 **Demo Mode** | 12 built-in global attack scenarios, no Wazuh needed to try it |
 | 🔐 **JWT Auth** | Secure login with bcrypt password hashing and token expiry |
 | 🎨 **Cyberpunk UI** | Minimal single-row HUD header, Orbitron font, scanline overlay, glassmorphism panels |
@@ -76,7 +76,7 @@
 │  Leaflet.js (maps)           JWT Authentication         │
 │  Orbitron (Google Fonts)     bcrypt password hashing    │
 │  CSS3 Animations             ip-api.com (GeoIP)         │
-│  Canvas (WIDYA intro/spread) Direct alerts.json reader  │
+│  Canvas (JAGAD intro/spread) Direct alerts.json reader  │
 │                                                         │
 │  SIEM Integration                                       │
 │  ────────────────────────────────────────────────       │
@@ -103,7 +103,7 @@ project-sentinel/
 ├── frontend/
 │   ├── public/
 │   │   ├── index.html         # Loads Orbitron font from Google Fonts
-│   │   └── widya-face.png      # WIDYA AI avatar artwork
+│   │   └── jagad-face.png      # JAGAD AI avatar artwork
 │   ├── src/
 │   │   ├── App.js             # Root: auth check, data fetch, layout
 │   │   ├── App.css            # Header, menu, global styles
@@ -112,11 +112,11 @@ project-sentinel/
 │   │   │   ├── Map2D.css      # Scanlines, scan beam, glassmorphism HUD
 │   │   │   ├── AlertsTable.js # Searchable table with MITRE tags
 │   │   │   ├── AlertsTable.css
-│   │   │   ├── WIDYA.js       # AI threat-analyst chatbot (risk score, MITRE, recs)
-│   │   │   ├── WIDYA.css
-│   │   │   ├── WIDYAIntro.js  # Boot-up intro animation for WIDYA
-│   │   │   ├── WIDYAIntro.css
-│   │   │   ├── WIDYASpread.js # Canvas-based reveal/spread animation
+│   │   │   ├── JAGAD.js       # AI threat-analyst chatbot (risk score, MITRE, recs)
+│   │   │   ├── JAGAD.css
+│   │   │   ├── JAGADIntro.js  # Boot-up intro animation for JAGAD
+│   │   │   ├── JAGADIntro.css
+│   │   │   ├── JAGADSpread.js # Canvas-based reveal/spread animation
 │   │   │   ├── Login.js       # Animated login page
 │   │   │   └── Login.css
 │   │   └── utils/
@@ -240,24 +240,24 @@ Includes 12 pre-configured global attack scenarios:
                     ├── Attack Map (Leaflet, clustered arcs)
                     ├── Severity HUD
                     ├── Alerts Table
-                    └── WIDYA AI Threat Analyst
+                    └── JAGAD AI Threat Analyst
 ```
 
 ---
 
-## 🤖 WIDYA — AI Threat Analyst
+## 🤖 JAGAD - AI Threat Analyst
 
-WIDYA is an in-dashboard chat assistant that analyzes the live alert feed and answers questions about the current security posture — entirely client-side, no external AI API required.
+**JAGAD** ("Jaringan Analisis Garda Ancaman Digital") is an in-dashboard chat assistant that analyzes the live alert feed and answers questions about the current security posture - entirely client-side, no external AI API required.
 
-- **Risk scoring** — computes an overall `LOW / MEDIUM / HIGH / CRITICAL` risk score from severity-weighted alert counts
-- **Severity breakdown** — Critical / High / Medium / Low counts with SLA-style guidance per tier
-- **Attack vector analysis** — top targeted services (SSH, HTTP, RDP, MySQL, etc.) with counts
-- **Geographic analysis** — top source countries/regions for inbound attacks
-- **MITRE ATT&CK mapping** — maps observed techniques to tactics (Initial Access, Credential Access, Defense Evasion, Reconnaissance) with explanations
-- **Timeline view** — recent alerts with severity tags, full descriptions, and city/country/MITRE/rule-ID metadata
-- **Tailored recommendations** — multi-sentence, configuration-specific hardening and mitigation steps based on what's actually being attacked
-- **Full report / brief mode** — multi-paragraph executive summary combining all of the above
-- **Boot-up & reveal animations** — `WIDYAIntro.js` (intro sequence) and `WIDYASpread.js` (canvas-based spread/reveal effect) for a polished first impression
+- **Risk scoring** - computes an overall `LOW / MEDIUM / HIGH / CRITICAL` risk score from severity-weighted alert counts
+- **Severity breakdown** - Critical / High / Medium / Low counts with SLA-style guidance per tier
+- **Attack vector analysis** - top targeted services (SSH, HTTP, RDP, MySQL, etc.) with counts
+- **Geographic analysis** - top source countries/regions for inbound attacks
+- **MITRE ATT&CK mapping** - maps observed techniques to tactics (Initial Access, Credential Access, Defense Evasion, Reconnaissance) with explanations
+- **Timeline view** - recent alerts with severity tags, full descriptions, and city/country/MITRE/rule-ID metadata
+- **Tailored recommendations** - multi-sentence, configuration-specific hardening and mitigation steps based on what's actually being attacked
+- **Full report / brief mode** - multi-paragraph executive summary combining all of the above
+- **Boot-up & reveal animations** - `JAGADIntro.js` (intro sequence) and `JAGADSpread.js` (canvas-based spread/reveal effect) for a polished first impression
 
 ---
 

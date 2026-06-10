@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useLayoutEffect } from 'react';
 
-export default function WIDYASpread({ originX, originY, onDone }) {
+export default function JAGADSpread({ originX, originY, onDone }) {
   const canvasRef = useRef(null);
 
-  // Runs synchronously after DOM paint — draws opaque cover before browser shows first frame,
+  // Runs synchronously after DOM paint - draws opaque cover before browser shows first frame,
   // preventing the panel content from flashing through before the animation starts.
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -22,7 +22,7 @@ export default function WIDYASpread({ originX, originY, onDone }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Reuse dimensions already set by useLayoutEffect (don't reset — that clears the canvas)
+    // Reuse dimensions already set by useLayoutEffect (don't reset - that clears the canvas)
     const W = canvas.width  || canvas.offsetWidth;
     const H = canvas.height || canvas.offsetHeight;
     if (!W || !H) return;
@@ -48,7 +48,7 @@ export default function WIDYASpread({ originX, originY, onDone }) {
       // fade-in 0→8%
       const fadeIn = Math.min(t / 0.08, 1);
 
-      // smoothstep fade-out 62%→100% — eases out so panel reveal feels natural
+      // smoothstep fade-out 62%→100% - eases out so panel reveal feels natural
       const FADE_START = 0.62;
       let fadeOut = 1;
       if (t > FADE_START) {
@@ -57,7 +57,7 @@ export default function WIDYASpread({ originX, originY, onDone }) {
       }
       const gA = fadeIn * fadeOut;
 
-      // clearRect leaves canvas pixels transparent — no CSS background, so panel
+      // clearRect leaves canvas pixels transparent - no CSS background, so panel
       // becomes visible through the canvas as gA → 0
       ctx.clearRect(0, 0, W, H);
 
@@ -228,7 +228,7 @@ export default function WIDYASpread({ originX, originY, onDone }) {
         height: '100%',
         zIndex: 10,
         pointerEvents: 'none',
-        // No CSS background — useLayoutEffect draws initial fill synchronously,
+        // No CSS background - useLayoutEffect draws initial fill synchronously,
         // and during fade-out clearRect leaves canvas transparent so panel shows through.
       }}
     />

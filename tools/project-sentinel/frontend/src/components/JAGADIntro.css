@@ -1,5 +1,5 @@
 /* ===== OVERLAY ===== */
-.widya-intro-overlay {
+.jagad-intro-overlay {
   position: fixed;
   inset: 0;
   background: #040810;
@@ -11,9 +11,9 @@
 }
 
 /* Non-sphere content fades out when sphere starts flying */
-.content-fading .widya-intro-greeting,
-.content-fading .widya-cta-btn,
-.content-fading .widya-cta-hint {
+.content-fading .jagad-intro-greeting,
+.content-fading .jagad-cta-btn,
+.content-fading .jagad-cta-hint {
   animation: contentFade 0.22s ease forwards;
 }
 
@@ -21,7 +21,7 @@
   to { opacity: 0; transform: translateY(12px); }
 }
 
-/* ===== SPHERE FLY — curved arc, bouncy ===== */
+/* ===== SPHERE FLY - curved arc, bouncy ===== */
 .sphere-flying {
   animation: sphereFlyTo 0.96s linear forwards !important;
   position: relative;
@@ -46,7 +46,7 @@
     filter: brightness(0.65);
     opacity: 1;
   }
-  /* Launch: X goes BACKWARD slightly, Y shoots up — creates clear arc curve */
+  /* Launch: X goes BACKWARD slightly, Y shoots up - creates clear arc curve */
   27% {
     transform: translate(
       calc(var(--fly-dx) * -0.06),
@@ -96,7 +96,7 @@
 }
 
 /* Skip */
-.widya-intro-skip {
+.jagad-intro-skip {
   position: absolute;
   top: 20px; right: 20px;
   background: none;
@@ -112,10 +112,10 @@
   z-index: 2;
 }
 
-.widya-intro-skip:hover { color: #00c8f0; border-color: rgba(0,200,240,0.4); }
+.jagad-intro-skip:hover { color: #00c8f0; border-color: rgba(0,200,240,0.4); }
 
 /* ===== LAYOUT ===== */
-.widya-intro-content {
+.jagad-intro-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -126,14 +126,14 @@
 }
 
 /* ===== PROFILE SPHERE ===== */
-.widya-profile-wrap {
+.jagad-profile-wrap {
   position: relative;
   width: 200px;
   height: 200px;
 }
 
 /* Outer glow ring */
-.widya-profile-ring {
+.jagad-profile-ring {
   position: absolute;
   inset: -10px;
   border-radius: 50%;
@@ -141,7 +141,7 @@
   animation: ringPulse 3s ease-in-out infinite;
 }
 
-.widya-profile-ring-2 {
+.jagad-profile-ring-2 {
   position: absolute;
   inset: -20px;
   border-radius: 50%;
@@ -155,7 +155,7 @@
 }
 
 /* Circular container for photo */
-.widya-profile-circle {
+.jagad-profile-circle {
   width: 200px;
   height: 200px;
   border-radius: 50%;
@@ -168,7 +168,7 @@
     0 0 80px rgba(0,120,200,0.08);
 }
 
-.widya-profile-img {
+.jagad-profile-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -183,7 +183,7 @@
 }
 
 /* Fallback CSS sphere */
-.widya-css-sphere {
+.jagad-css-sphere {
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -195,7 +195,7 @@
   position: relative;
 }
 
-.widya-css-sphere::before {
+.jagad-css-sphere::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -209,7 +209,7 @@
   animation: scanSlide 0.06s steps(1) infinite;
 }
 
-.widya-css-sphere::after {
+.jagad-css-sphere::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -228,7 +228,7 @@
 }
 
 /* Status dot */
-.widya-profile-status {
+.jagad-profile-status {
   position: absolute;
   bottom: 12px; right: 12px;
   width: 10px; height: 10px;
@@ -241,7 +241,7 @@
 }
 
 /* ===== GREETING ===== */
-.widya-intro-greeting {
+.jagad-intro-greeting {
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -249,7 +249,7 @@
   gap: 8px;
 }
 
-.widya-intro-name {
+.jagad-intro-name {
   font-family: 'Orbitron', 'Courier New', monospace;
   font-size: 28px;
   font-weight: 900;
@@ -264,7 +264,7 @@
   50%      { text-shadow: 0 0 30px rgba(0,200,240,0.7), 0 0 60px rgba(0,180,220,0.3); }
 }
 
-.widya-intro-sub {
+.jagad-intro-sub {
   font-family: 'Courier New', monospace;
   font-size: 9px;
   color: #1a3a4a;
@@ -273,7 +273,7 @@
 }
 
 /* ===== CTA ===== */
-.widya-cta-btn {
+.jagad-cta-btn {
   background: transparent;
   border: 1px solid rgba(0,200,240,0.4);
   color: #00c8f0;
@@ -290,7 +290,7 @@
   overflow: hidden;
 }
 
-.widya-cta-btn::before {
+.jagad-cta-btn::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -299,15 +299,15 @@
   transition: opacity 0.2s;
 }
 
-.widya-cta-btn:hover {
+.jagad-cta-btn:hover {
   border-color: #00c8f0;
   box-shadow: 0 0 20px rgba(0,200,240,0.25);
   letter-spacing: 4px;
 }
 
-.widya-cta-btn:hover::before { opacity: 1; }
+.jagad-cta-btn:hover::before { opacity: 1; }
 
-.widya-cta-hint {
+.jagad-cta-hint {
   font-family: 'Courier New', monospace;
   font-size: 8px;
   color: #0e2535;

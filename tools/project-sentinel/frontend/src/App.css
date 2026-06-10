@@ -19,12 +19,12 @@ body {
   transition: padding-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.App.widya-open {
+.App.jagad-open {
   padding-right: 416px;
 }
 
 /* ══════════════════════════════════════
-   APP HEADER — clean single-row layout
+   APP HEADER - clean single-row layout
    ══════════════════════════════════════ */
 .app-header {
   display: flex;
@@ -186,7 +186,7 @@ body {
   overflow: visible;
 }
 
-/* Panel zona waktu — slide DOWN dari bawah clock */
+/* Panel zona waktu - slide DOWN dari bawah clock */
 .clock-tz-panel {
   position: absolute;
   top: calc(100% + 8px);
@@ -250,7 +250,7 @@ body {
   margin-right: 4px;
 }
 
-/* Clock face — compact, clickable */
+/* Clock face - compact, clickable */
 .clock-face {
   display: flex;
   flex-direction: column;
@@ -465,8 +465,8 @@ body {
   z-index: 2;
 }
 
-/* ===== WIDYA TRIGGER BUTTON ===== */
-.widya-trigger-btn {
+/* ===== JAGAD TRIGGER BUTTON ===== */
+.jagad-trigger-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -484,20 +484,20 @@ body {
   white-space: nowrap;
 }
 
-.widya-trigger-btn:hover,
-.widya-trigger-btn.active {
+.jagad-trigger-btn:hover,
+.jagad-trigger-btn.active {
   background: rgba(0,30,60,0.9);
   border-color: #00ffcc;
   box-shadow: 0 0 14px rgba(0,204,255,0.25);
   color: #00ffcc;
 }
 
-.widya-trigger-eye {
+.jagad-trigger-eye {
   font-size: 14px;
   filter: drop-shadow(0 0 4px rgba(0,204,255,0.7));
 }
 
-.widya-trigger-btn.active .widya-trigger-eye {
+.jagad-trigger-btn.active .jagad-trigger-eye {
   animation: eyePulseBtn 2s ease-in-out infinite;
 }
 
@@ -506,7 +506,7 @@ body {
   50%      { filter: drop-shadow(0 0 12px rgba(0,255,204,1)); }
 }
 
-/* h1 removed — replaced by .hdr-brand-name */
+/* h1 removed - replaced by .hdr-brand-name */
 
 /* ===== FILTER BAR ===== */
 .filter-bar {
@@ -749,7 +749,7 @@ body {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
-  .App.widya-open {
+  .App.jagad-open {
     padding-right: 16px;
   }
 }

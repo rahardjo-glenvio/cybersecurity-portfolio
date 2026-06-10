@@ -3,7 +3,7 @@ import axios from 'axios';
 import Map2D from './components/Map2D';
 import AlertsTable from './components/AlertsTable';
 import Login from './components/Login';
-import WIDYA from './components/WIDYA';
+import JAGAD from './components/JAGAD';
 import { auth } from './utils/auth';
 import './App.css';
 
@@ -16,8 +16,8 @@ function App() {
   const [dataSource, setDataSource] = useState('demo');
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [widyaOpen, setWidyaOpen] = useState(false);
-  const [widyaClosing, setWidyaClosing] = useState(false);
+  const [jagadOpen, setJagadOpen] = useState(false);
+  const [jagadClosing, setJagadClosing] = useState(false);
   const menuRef  = useRef(null);
   const clockRef = useRef(null);
   const closeTimerRef = useRef(null);
@@ -116,23 +116,23 @@ function App() {
     }
   };
 
-  const handleOpenWidya = () => {
+  const handleOpenJagad = () => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    setWidyaClosing(false);
-    setWidyaOpen(true);
+    setJagadClosing(false);
+    setJagadOpen(true);
   };
 
-  const handleCloseWidya = useCallback(() => {
-    setWidyaClosing(true);
+  const handleCloseJagad = useCallback(() => {
+    setJagadClosing(true);
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     closeTimerRef.current = setTimeout(() => {
-      setWidyaOpen(false);
-      setWidyaClosing(false);
+      setJagadOpen(false);
+      setJagadClosing(false);
       closeTimerRef.current = null;
     }, 350);
   }, []);
 
-  // Filter alerts berdasarkan searchTerm — dikirim ke Map2D dan AlertsTable
+  // Filter alerts berdasarkan searchTerm - dikirim ke Map2D dan AlertsTable
   const critCount = useMemo(() => alerts.filter(a => a.rule_level >= 9).length, [alerts]);
   const highCount = useMemo(() => alerts.filter(a => a.rule_level >= 7 && a.rule_level < 9).length, [alerts]);
   const medCount  = useMemo(() => alerts.filter(a => a.rule_level >= 5 && a.rule_level < 7).length, [alerts]);
@@ -182,7 +182,7 @@ function App() {
   }
 
   return (
-    <div className={`App ${widyaOpen ? 'widya-open' : ''}`}>
+    <div className={`App ${jagadOpen ? 'jagad-open' : ''}`}>
       <div className="app-header">
 
         {/* ── Brand ── */}
@@ -245,12 +245,12 @@ function App() {
           </div>
 
           <button
-            className={`widya-trigger-btn ${widyaOpen ? 'active' : ''}`}
-            onClick={() => widyaOpen ? handleCloseWidya() : handleOpenWidya()}
-            title={widyaOpen ? 'Close WIDYA AI' : 'Open WIDYA AI Analyzer'}
+            className={`jagad-trigger-btn ${jagadOpen ? 'active' : ''}`}
+            onClick={() => jagadOpen ? handleCloseJagad() : handleOpenJagad()}
+            title={jagadOpen ? 'Close JAGAD AI' : 'Open JAGAD AI Analyzer'}
           >
-            <span className="widya-trigger-eye">👁</span>
-            <span>{widyaOpen ? 'CLOSE' : 'WIDYA AI'}</span>
+            <span className="jagad-trigger-eye">👁</span>
+            <span>{jagadOpen ? 'CLOSE' : 'JAGAD AI'}</span>
           </button>
 
           <div className="menu-dropdown" ref={menuRef}>
@@ -301,8 +301,8 @@ function App() {
         onSearch={setSearchTerm}
       />
 
-      {widyaOpen && (
-        <WIDYA alerts={filteredAlerts} onClose={handleCloseWidya} closing={widyaClosing} />
+      {jagadOpen && (
+        <JAGAD alerts={filteredAlerts} onClose={handleCloseJagad} closing={jagadClosing} />
       )}
     </div>
   );

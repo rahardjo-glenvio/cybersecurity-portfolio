@@ -1,30 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './WIDYAIntro.css';
+import './JAGADIntro.css';
 
 function ProfileSphere({ sphereRef }) {
   const [imgOk, setImgOk] = useState(true);
   return (
-    <div className="widya-profile-wrap" ref={sphereRef}>
-      <div className="widya-profile-ring-2" />
-      <div className="widya-profile-ring" />
-      <div className="widya-profile-circle">
+    <div className="jagad-profile-wrap" ref={sphereRef}>
+      <div className="jagad-profile-ring-2" />
+      <div className="jagad-profile-ring" />
+      <div className="jagad-profile-circle">
         {imgOk ? (
           <img
-            src="/widya-face.png"
-            alt="WIDYA"
-            className="widya-profile-img"
+            src="/jagad-face.png"
+            alt="JAGAD"
+            className="jagad-profile-img"
             onError={() => setImgOk(false)}
           />
         ) : (
-          <div className="widya-css-sphere" />
+          <div className="jagad-css-sphere" />
         )}
       </div>
-      <div className="widya-profile-status" />
+      <div className="jagad-profile-status" />
     </div>
   );
 }
 
-export default function WIDYAIntro({ alertCount, onLaunch, onComplete }) {
+export default function JAGADIntro({ alertCount, onLaunch, onComplete }) {
   const [phase, setPhase] = useState('idle');
   const [visible, setVisible] = useState(false);
   const [overlayFading, setOverlayFading] = useState(false);
@@ -73,27 +73,27 @@ export default function WIDYAIntro({ alertCount, onLaunch, onComplete }) {
 
   return (
     <div
-      className="widya-intro-overlay"
+      className="jagad-intro-overlay"
       style={{
         opacity: !visible ? 0 : overlayFading ? 0 : 1,
         transition: 'opacity 0.42s ease',
         pointerEvents: overlayFading ? 'none' : 'auto',
       }}
     >
-      <button className="widya-intro-skip" onClick={handleStart}>SKIP ▸</button>
+      <button className="jagad-intro-skip" onClick={handleStart}>SKIP ▸</button>
 
-      <div className="widya-intro-content" ref={contentRef}>
+      <div className="jagad-intro-content" ref={contentRef}>
         <ProfileSphere sphereRef={sphereRef} />
 
-        <div className="widya-intro-greeting">
-          <div className="widya-intro-name">WIDYA</div>
-          <div className="widya-intro-sub">Wazuh Intelligent Defense Yield Analyzer</div>
+        <div className="jagad-intro-greeting">
+          <div className="jagad-intro-name">JAGAD</div>
+          <div className="jagad-intro-sub">Jaringan Analisis Garda Ancaman Digital</div>
         </div>
 
-        <button className="widya-cta-btn" onClick={handleStart}>
+        <button className="jagad-cta-btn" onClick={handleStart}>
           Mulai Analisis
         </button>
-        <span className="widya-cta-hint">{alertCount} EVENTS TERDETEKSI</span>
+        <span className="jagad-cta-hint">{alertCount} EVENTS TERDETEKSI</span>
       </div>
     </div>
   );
