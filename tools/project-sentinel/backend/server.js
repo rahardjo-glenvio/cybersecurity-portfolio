@@ -3,6 +3,8 @@ const axios = require('axios');
 const cors = require('cors');
 const https = require('https');
 const os = require('os');
+const fs = require('fs');
+const { execSync } = require('child_process');
 require('dotenv').config();
 
 const app = express();
@@ -36,16 +38,6 @@ const wazuhAPI = axios.create({
   auth: {
     username: process.env.WAZUH_USERNAME,
     password: process.env.WAZUH_PASSWORD
-  }
-});
-
-// Wazuh Indexer (OpenSearch) client
-const indexerAPI = axios.create({
-  baseURL: process.env.INDEXER_URL || 'https://127.0.0.1:9200',
-  httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-  auth: {
-    username: process.env.INDEXER_USER || 'admin',
-    password: process.env.INDEXER_PASSWORD
   }
 });
 
@@ -89,25 +81,45 @@ app.get('/api/test', authenticateToken, (req, res) => {
   res.json({ message: 'Backend OK', ip: SERVER_IP });
 });
 
-// Real alerts from Wazuh Indexer
+// ─── Direct alerts.json reader (real-time, no indexer/filebeat dependency) ───
+const ALERTS_JSON_PATH = process.env.ALERTS_JSON_PATH || '/var/ossec/logs/alerts/alerts.json';
+
+function readAlertsFromFile(hours = 24, maxAlerts = 500) {
+  try {
+    // tail the last N lines so this stays fast even on multi-GB log files
+    const raw = execSync(`tail -n 1500 ${ALERTS_JSON_PATH}`, { timeout: 5000, maxBuffer: 20 * 1024 * 1024 }).toString();
+    const lines = raw.split('\n').filter(l => l.trim());
+    const cutoff = Date.now() - hours * 3600 * 1000;
+    const alerts = [];
+
+    for (let i = lines.length - 1; i >= 0 && alerts.length < maxAlerts; i--) {
+      try {
+        const a = JSON.parse(lines[i]);
+        if (a.timestamp && new Date(a.timestamp).getTime() >= cutoff) {
+          alerts.push(a);
+        }
+      } catch (e) { /* skip malformed line */ }
+    }
+    return alerts; // already newest-first
+  } catch (e) {
+    console.error('readAlertsFromFile error:', e.message);
+    return [];
+  }
+}
+
+// Real alerts — read directly from Wazuh's alerts.json (always real-time)
 app.get('/api/alerts', authenticateToken, async (req, res) => {
   try {
-    const query = {
-      query: { range: { timestamp: { gte: 'now-24h', lte: 'now' } } },
-      size: 100,
-      sort: [{ timestamp: 'desc' }]
-    };
+    const rawAlerts = readAlertsFromFile(24, 500);
 
-    const response = await indexerAPI.post('/wazuh-alerts-*/_search', query);
-    const raw = response.data.hits.hits.map(hit => {
-      const s = hit._source;
+    const raw = rawAlerts.map((s, idx) => {
       const srcip = s.data?.srcip
         || s.data?.src_ip
         || s.data?.win?.eventdata?.ipAddress
         || s.agent?.ip
         || null;
       return {
-        id: hit._id,
+        id: s.id || `file-${idx}`,
         timestamp: s.timestamp,
         rule_id: s.rule?.id,
         rule_description: s.rule?.description,
@@ -117,7 +129,7 @@ app.get('/api/alerts', authenticateToken, async (req, res) => {
         destination_ip: SERVER_IP,
         mitre_technique: s.rule?.mitre?.technique || [],
         full_log: s.full_log,
-        agent_name: s.agent?.name || 'unknown'
+        agent_name: s.agent?.name || 'wazuh-manager'
       };
     });
 
@@ -131,7 +143,7 @@ app.get('/api/alerts', authenticateToken, async (req, res) => {
       return true;
     });
 
-    console.log(`Alerts: ${raw.length} total, ${relevant.length} relevant`);
+    console.log(`Alerts (alerts.json): ${raw.length} total, ${relevant.length} relevant`);
 
     const SERVER_LAT = parseFloat(process.env.SERVER_LAT || -7.4333);
     const SERVER_LON = parseFloat(process.env.SERVER_LON || 109.2333);
@@ -177,7 +189,7 @@ app.get('/api/alerts', authenticateToken, async (req, res) => {
 
     res.json({ success: true, count: enriched.length, alerts: enriched });
   } catch (error) {
-    console.error('Indexer error:', error.message);
+    console.error('Alerts error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });

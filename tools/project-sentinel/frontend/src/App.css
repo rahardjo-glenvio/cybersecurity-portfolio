@@ -16,55 +16,445 @@ body {
   padding: 16px;
   max-width: 1920px;
   margin: 0 auto;
+  transition: padding-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.App.widya-open {
+  padding-right: 416px;
+}
+
+/* ══════════════════════════════════════
+   APP HEADER — clean single-row layout
+   ══════════════════════════════════════ */
 .app-header {
-  background: linear-gradient(135deg, rgba(0,20,40,0.90) 0%, rgba(10,30,55,0.85) 60%, rgba(0,15,35,0.90) 100%);
-  border: 1px solid rgba(0,204,255,0.25);
-  border-radius: 12px;
-  padding: 20px 28px;
-  margin-bottom: 16px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 0;
+  padding: 0 24px;
+  height: 68px;
+  margin-bottom: 16px;
   position: relative;
-  /* Motif dot grid tipis */
+  border-radius: 12px;
+  border: 1px solid rgba(0,204,255,0.2);
+  overflow: visible;
   background-image:
-    linear-gradient(135deg, rgba(0,20,40,0.90) 0%, rgba(10,30,55,0.85) 60%, rgba(0,15,35,0.90) 100%),
-    radial-gradient(circle, rgba(0,204,255,0.07) 1px, transparent 1px),
-    radial-gradient(circle, rgba(0,255,204,0.04) 1px, transparent 1px);
-  background-size: 100% 100%, 22px 22px, 44px 44px;
-  background-position: 0 0, 0 0, 11px 11px;
+    linear-gradient(135deg, rgba(0,16,36,0.96) 0%, rgba(6,22,48,0.94) 60%, rgba(0,12,30,0.96) 100%),
+    radial-gradient(circle, rgba(0,204,255,0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
+  overflow: visible;
 }
 
+/* Top cyan line */
 .app-header::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #00ccff 20%, #00ffcc 50%, #00ccff 80%, transparent 100%);
-  opacity: 0.7;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,204,255,0.5) 20%,
+    rgba(0,255,204,0.8) 50%,
+    rgba(0,204,255,0.5) 80%,
+    transparent 100%
+  );
   border-radius: 12px 12px 0 0;
   pointer-events: none;
+}
+
+/* ── Brand ── */
+.hdr-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+  padding-right: 24px;
+  border-right: 1px solid rgba(0,204,255,0.12);
+  height: 100%;
+}
+
+.hdr-brand-mark {
+  font-size: 20px;
+  color: #00ffcc;
+  text-shadow: 0 0 14px rgba(0,255,204,0.6);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hdr-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hdr-brand-name {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #00ccff 0%, #00ffcc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.hdr-brand-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 7px;
+  letter-spacing: 2.5px;
+  color: rgba(0,180,220,0.38);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── Center: minimal status ── */
+.hdr-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.hdr-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border: 1px solid rgba(0,230,100,0.22);
+  border-radius: 20px;
+  background: rgba(0,230,100,0.05);
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #00e866;
+  flex-shrink: 0;
+}
+
+.hdr-live-dot {
+  width: 6px; height: 6px;
+  background: #00e866;
+  border-radius: 50%;
+  box-shadow: 0 0 7px #00e866;
+  animation: hdrLivePulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes hdrLivePulse {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 6px #00e866; }
+  50%       { opacity: 0.4; box-shadow: 0 0 12px #00e866; }
+}
+
+.hdr-center-sep {
+  width: 3px; height: 3px;
+  background: rgba(0,204,255,0.2);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hdr-center-item {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(0,200,240,0.45);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hdr-center-item.dim {
+  color: rgba(0,180,220,0.28);
+  letter-spacing: 1.5px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  padding-left: 24px;
+  border-left: 1px solid rgba(0,204,255,0.12);
+  height: 100%;
+}
+
+/* ===== HEADER LIVE CLOCK ===== */
+.header-clock {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* allow dropdown to overflow below header */
+  overflow: visible;
+}
+
+/* Panel zona waktu — slide DOWN dari bawah clock */
+.clock-tz-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(4, 16, 38, 0.98);
+  border: 1px solid rgba(0, 204, 255, 0.4);
+  border-radius: 10px;
+  padding: 10px 14px;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0,204,255,0.08);
+  transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(-6px);
+  white-space: nowrap;
+}
+
+/* Caret arah ke atas (menunjuk ke clock face) */
+.clock-tz-panel::after {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 22px;
+  width: 0; height: 0;
+  border: 7px solid transparent;
+  border-bottom-color: rgba(0, 204, 255, 0.4);
+  border-top-width: 0;
+}
+.clock-tz-panel::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: 24px;
+  width: 0; height: 0;
+  border: 5px solid transparent;
+  border-bottom-color: rgba(4, 16, 38, 0.98);
+  border-top-width: 0;
   z-index: 1;
 }
 
-/* Motif diagonal circuit lines */
-.app-header::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(60deg, rgba(0,204,255,0.035) 1px, transparent 1px),
-    linear-gradient(-60deg, rgba(0,255,204,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,204,255,0.015) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px, 80px 80px;
-  border-radius: 12px;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.9;
+.clock-tz-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.clock-tz-panel-title {
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #5ab8d4;
+  text-transform: uppercase;
+  padding-right: 12px;
+  border-right: 1px solid rgba(0, 204, 255, 0.3);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+}
+
+/* Clock face — compact, clickable */
+.clock-face {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid rgba(0, 204, 255, 0.16);
+  background: rgba(0, 8, 22, 0.5);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  user-select: none;
+  white-space: nowrap;
+}
+.clock-face:hover {
+  border-color: rgba(0, 204, 255, 0.38);
+  background: rgba(0, 18, 48, 0.7);
+}
+.clock-face.tz-open {
+  border-color: rgba(0, 204, 255, 0.5);
+  background: rgba(0, 22, 55, 0.8);
+}
+
+.clock-time {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #00d4ff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.45);
+  line-height: 1;
+  display: block;
+}
+
+.clock-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 100%;
+}
+
+.clock-date {
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  color: rgba(0, 188, 230, 0.45);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.clock-tz-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(0, 210, 255, 0.9);
+  background: rgba(0, 204, 255, 0.1);
+  border: 1px solid rgba(0, 204, 255, 0.28);
+  border-radius: 4px;
+  padding: 2px 8px;
+  transition: all 0.2s;
+}
+.clock-face:hover .clock-tz-badge,
+.clock-face.tz-open .clock-tz-badge {
+  background: rgba(0, 204, 255, 0.16);
+  border-color: rgba(0, 204, 255, 0.5);
+  color: #00ffdd;
+}
+
+.clock-tz-arrow {
+  display: inline-block;
+  font-size: 9px;
+  color: rgba(0, 204, 255, 0.5);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+  line-height: 1;
+  /* ‹ rotated 90° = pointing down */
+  transform: rotate(-90deg);
+}
+.clock-tz-arrow.open {
+  transform: rotate(90deg);
+  color: #00ffcc;
+}
+
+/* Tombol timezone di dalam panel */
+.tz-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 18px;
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  border-radius: 7px;
+  background: rgba(0, 20, 48, 0.85);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 64px;
+}
+.tz-btn:hover {
+  background: rgba(0, 204, 255, 0.12);
+  border-color: rgba(0, 204, 255, 0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 204, 255, 0.12);
+}
+
+.tz-btn-label {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  color: #90d8ef;
+  transition: color 0.18s, text-shadow 0.18s;
+  text-transform: uppercase;
+}
+.tz-btn-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #5aadca;
+  transition: color 0.18s;
+}
+
+.tz-btn:hover .tz-btn-label { color: #00e0ff; text-shadow: 0 0 10px rgba(0,224,255,0.5); }
+.tz-btn:hover .tz-btn-sub   { color: #7ac8e0; }
+
+.tz-btn.active {
+  background: rgba(0, 204, 255, 0.15);
+  border-color: rgba(0, 204, 255, 0.65);
+  box-shadow: 0 0 18px rgba(0, 204, 255, 0.2), inset 0 0 14px rgba(0, 204, 255, 0.08);
+}
+.tz-btn.active .tz-btn-label {
+  color: #00ffcc;
+  text-shadow: 0 0 16px rgba(0, 255, 204, 0.7);
+}
+.tz-btn.active .tz-btn-sub {
+  color: rgba(0, 255, 204, 0.8);
+}
+
+/* ===== QUICK STATS PILLS ===== */
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 12px;
+  border-right: 1px solid rgba(0, 204, 255, 0.1);
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stat-indicator {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-pill.critical {
+  background: rgba(255, 0, 68, 0.1);
+  border: 1px solid rgba(255, 0, 68, 0.28);
+  color: #ff2244;
+  animation: criticalPulse 2s ease-in-out infinite;
+}
+
+.stat-pill.critical .stat-indicator {
+  background: #ff2244;
+  box-shadow: 0 0 6px #ff2244;
+  animation: criticalPulse 2s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+.stat-pill.high {
+  background: rgba(255, 136, 0, 0.08);
+  border: 1px solid rgba(255, 136, 0, 0.22);
+  color: #ff8800;
+}
+
+.stat-pill.high .stat-indicator {
+  background: #ff8800;
+  box-shadow: 0 0 5px rgba(255, 136, 0, 0.6);
+}
+
+.stat-pill.total {
+  background: rgba(0, 204, 255, 0.06);
+  border: 1px solid rgba(0, 204, 255, 0.15);
+  color: rgba(0, 180, 220, 0.45);
 }
 
 .header-left {
@@ -90,9 +480,8 @@ body {
   letter-spacing: 1.5px;
   padding: 7px 14px;
   cursor: pointer;
-  margin-top: 2px;
   transition: all 0.2s ease;
-  width: fit-content;
+  white-space: nowrap;
 }
 
 .widya-trigger-btn:hover,
@@ -117,30 +506,7 @@ body {
   50%      { filter: drop-shadow(0 0 12px rgba(0,255,204,1)); }
 }
 
-.app-header h1 {
-  font-family: 'Orbitron', 'Rajdhani', 'Segoe UI', sans-serif;
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  background: linear-gradient(135deg, #00ccff 0%, #40e8ff 40%, #00ffcc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  filter: drop-shadow(0 0 8px rgba(0,204,255,0.35));
-}
-
-.app-header h1::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 50px;
-  height: 2px;
-  background: linear-gradient(90deg, #00ccff, transparent);
-  border-radius: 2px;
-}
+/* h1 removed — replaced by .hdr-brand-name */
 
 /* ===== FILTER BAR ===== */
 .filter-bar {
@@ -382,15 +748,55 @@ body {
 }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .App.widya-open {
+    padding-right: 16px;
+  }
+}
+
 @media (max-width: 900px) {
   .app-header {
-    flex-direction: column;
-    gap: 16px;
-    padding: 18px 20px;
+    padding: 16px 18px 12px;
   }
+
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .header-center {
+    display: none;
+  }
+
+  .header-statusbar {
+    font-size: 7.5px;
+    gap: 5px;
+  }
+
+  .hsb-item { display: none; }
+  .hsb-live-badge,
+  .hsb-time,
+  .hsb-spacer { display: flex; }
 
   .app-header h1 {
     font-size: 20px;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-stats {
+    order: -1;
+    width: 100%;
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid rgba(0, 204, 255, 0.08);
+    padding-bottom: 8px;
   }
 
   .filter-bar {

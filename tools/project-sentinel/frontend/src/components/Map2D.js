@@ -143,7 +143,7 @@ function Map2D({ alerts }) {
     return 'LOW';
   };
 
-  const generateArcPoints = (start, end, n = 30) => {
+  const generateArcPoints = (start, end, n = 120) => {
     const pts = [];
     const dist = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
     const h = dist * 0.2;
@@ -160,61 +160,71 @@ function Map2D({ alerts }) {
     return pts;
   };
 
-  const easeInOutCubic = t =>
-    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
+  // Keep for arc fade-in only; pulse uses linear
   const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
-  const animatePulse = (pathPoints, color, duration, gen) => {
+  // Spawn N simultaneous pulses on one arc, staggered evenly — no gaps ever
+  const animatePulse = (pathPoints, color, duration, gen, count = 4) => {
     const L = window.L;
     if (!L) return;
 
     const icon = L.divIcon({
       className: 'pulse-traveler',
       html: `<div class="tp-wrap">
-        <div class="tp-core" style="background:${color};box-shadow:0 0 8px ${color}"></div>
+        <div class="tp-core" style="background:${color};box-shadow:0 0 6px ${color},0 0 12px ${color}55"></div>
       </div>`,
-      iconSize: [10, 10], 
+      iconSize: [10, 10],
       iconAnchor: [5, 5]
     });
 
-    const run = () => {
+    // One independent looping traveler, offset by `startOffset` ms
+    const spawnTraveler = (startOffset) => {
       if (gen !== window.animationGeneration || !window.attackLayers) return;
 
       const pulse = L.marker(pathPoints[0], { icon, interactive: false });
       pulse.addTo(window.attackLayers);
-      const t0 = Date.now();
+
+      // Subtract startOffset so this traveler begins partway through the path
+      const t0 = performance.now() - startOffset;
+      let lastCycle = -1;
 
       const loop = () => {
         if (gen !== window.animationGeneration) {
           window.attackLayers?.hasLayer(pulse) && window.attackLayers.removeLayer(pulse);
           return;
         }
-        const raw = Math.min((Date.now() - t0) / duration, 1);
-        const p = easeInOutCubic(raw);
 
-        if (raw < 1) {
-          const fi = p * (pathPoints.length - 1);
-          const lo = Math.floor(fi), hi = Math.min(lo + 1, pathPoints.length - 1);
-          const frac = fi - lo;
-          const lat = pathPoints[lo][0] * (1 - frac) + pathPoints[hi][0] * frac;
-          const lng = pathPoints[lo][1] * (1 - frac) + pathPoints[hi][1] * frac;
-          pulse.setLatLng([lat, lng]);
-          requestAnimationFrame(loop);
-        } else {
-          window.attackLayers?.hasLayer(pulse) && window.attackLayers.removeLayer(pulse);
+        const elapsed = performance.now() - t0;
+        const cycle   = Math.floor(elapsed / duration);
+
+        // Pure linear progress — constant speed, no slowdown at endpoints
+        const p = (elapsed % duration) / duration;
+
+        const fi   = p * (pathPoints.length - 1);
+        const lo   = fi | 0;                                  // fast Math.floor
+        const hi   = lo + 1 < pathPoints.length ? lo + 1 : lo;
+        const frac = fi - lo;
+        const lat  = pathPoints[lo][0] + (pathPoints[hi][0] - pathPoints[lo][0]) * frac;
+        const lng  = pathPoints[lo][1] + (pathPoints[hi][1] - pathPoints[lo][1]) * frac;
+        pulse.setLatLng([lat, lng]);
+
+        // Impact ring each time the bullet wraps around to destination
+        if (cycle > lastCycle) {
+          lastCycle = cycle;
           spawnImpact(pathPoints[pathPoints.length - 1], color, gen);
-          if (gen === window.animationGeneration) {
-            const tid = setTimeout(run, 2000 + Math.random() * 4000);
-            window.pulseTimeouts?.push(tid);
-          }
         }
+
+        requestAnimationFrame(loop);
       };
+
       requestAnimationFrame(loop);
     };
 
-    const tid = setTimeout(run, Math.random() * 4000);
-    window.pulseTimeouts?.push(tid);
+    // Spawn all N travelers immediately, each offset in path progress
+    for (let i = 0; i < count; i++) {
+      const startOffset = (duration / count) * i;
+      spawnTraveler(startOffset);
+    }
   };
 
   const spawnImpact = (latlng, color, gen) => {
@@ -235,9 +245,26 @@ function Map2D({ alerts }) {
     window.pulseTimeouts?.push(tid);
   };
 
+  // ─── Deduplicate + cluster alerts by source IP for perf ────────────────────
+  const clusterAlerts = (data) => {
+    // Group by source_ip, keep highest-severity alert per IP
+    const byIp = {};
+    data.forEach(a => {
+      const key = a.source_ip || 'unknown';
+      if (!byIp[key] || a.rule_level > byIp[key].rule_level) {
+        byIp[key] = { ...a, _count: 0 };
+      }
+      byIp[key]._count = (byIp[key]._count || 0) + 1;
+    });
+    // Sort by severity desc, cap at MAX_SOURCES unique origins
+    return Object.values(byIp)
+      .sort((a, b) => b.rule_level - a.rule_level)
+      .slice(0, 40);
+  };
+
   const renderAttacks = (data) => {
     if (!window.L || !window.socMap) return;
-    
+
     const L = window.L;
     const map = window.socMap;
 
@@ -245,29 +272,26 @@ function Map2D({ alerts }) {
     stopAllAnimations();
     window.attackLayers?.clearLayers();
 
-    // Handle empty data gracefully
     if (!data || data.length === 0) {
-      setTimeout(() => {
-        map.setView([20, 30], 2);
-        setBlackout(false);
-      }, 500);
+      setTimeout(() => { map.setView([20, 30], 2); setBlackout(false); }, 500);
       return;
     }
 
     const gen = window.animationGeneration;
-    const geo = data.filter(a => 
-      a.source_lat && a.source_lon && 
+
+    // Only keep alerts with valid coords
+    const geoRaw = data.filter(a =>
+      a.source_lat && a.source_lon &&
       a.destination_lat && a.destination_lon
     );
 
-    // Handle case when no valid geo data
-    if (geo.length === 0) {
-      setTimeout(() => {
-        map.setView([20, 30], 2);
-        setBlackout(false);
-      }, 500);
+    if (geoRaw.length === 0) {
+      setTimeout(() => { map.setView([20, 30], 2); setBlackout(false); }, 500);
       return;
     }
+
+    // Cluster: max 40 unique source IPs, best severity per IP
+    const geo = clusterAlerts(geoRaw);
 
     const bounds = [];
     const destSeen = new Set();
@@ -281,23 +305,23 @@ function Map2D({ alerts }) {
       const arc = generateArcPoints(src, dst);
 
       const line = L.polyline(arc, {
-        color, 
-        weight: 1.5, 
-        opacity: 0, 
+        color,
+        weight: alert.rule_level >= 9 ? 1.5 : 1,
+        opacity: 0,
         className: 'arc-line'
       }).addTo(window.attackLayers);
 
       const tid = setTimeout(() => {
         if (gen !== window.animationGeneration) return;
-        const dur = 800, t0 = Date.now();
+        const dur = 600, t0 = performance.now();
         const fade = () => {
           if (gen !== window.animationGeneration) return;
-          const p = easeOutCubic(Math.min((Date.now() - t0) / dur, 1));
-          line.setStyle({ opacity: p * 0.7 });
+          const p = easeOutCubic(Math.min((performance.now() - t0) / dur, 1));
+          line.setStyle({ opacity: p * 0.55 });
           if (p < 1) requestAnimationFrame(fade);
         };
         requestAnimationFrame(fade);
-      }, idx * 200);
+      }, idx * 80);
       window.pulseTimeouts?.push(tid);
 
       line.bindPopup(`
@@ -312,7 +336,18 @@ function Map2D({ alerts }) {
         </div>
       `, { className: 'cp-wrap' });
 
-      animatePulse(arc, color, 3000, gen);
+      // Bullet count + speed by severity: critical = 5 fast, high = 4, med = 3, low = 2
+      const bulletCount = alert.rule_level >= 9 ? 5
+                        : alert.rule_level >= 7 ? 4
+                        : alert.rule_level >= 5 ? 3 : 2;
+      const speed       = alert.rule_level >= 9 ? 1400
+                        : alert.rule_level >= 7 ? 1800
+                        : alert.rule_level >= 5 ? 2200 : 2800;
+      animatePulse(arc, color, speed, gen, bulletCount);
+
+      const countBadge = (alert._count > 1)
+        ? `<span class="atk-count" style="color:${color}">${alert._count}×</span>`
+        : '';
 
       const srcIcon = L.divIcon({
         className: '',
@@ -321,10 +356,11 @@ function Map2D({ alerts }) {
           <div class="atk-core" style="background:${color}">
             <span class="atk-port">${alert.port || '?'}</span>
           </div>
+          ${countBadge}
           <div class="atk-label" style="color:${color}">${(alert.source_city || 'UNKNOWN').toUpperCase()}</div>
         </div>`,
-        iconSize: [70, 70], 
-        iconAnchor: [35, 35]
+        iconSize: [54, 54],
+        iconAnchor: [27, 27]
       });
 
       const srcMarker = L.marker(src, { icon: srcIcon }).addTo(window.attackLayers);
@@ -338,6 +374,7 @@ function Map2D({ alerts }) {
           <div class="cp-body">
             <div class="cp-row"><span class="cp-key">IP</span><span class="cp-val">${alert.source_ip}</span></div>
             <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.source_city}, ${alert.source_country}</span></div>
+            <div class="cp-row"><span class="cp-key">EVENTS</span><span class="cp-val" style="color:${color}">${alert._count || 1} alert${alert._count !== 1 ? 's' : ''}</span></div>
             <div class="cp-divider"></div>
             <div class="cp-row"><span class="cp-key">TARGET</span><span class="cp-tag">${alert.service}:${alert.port || '?'}</span></div>
             <div class="cp-row"><span class="cp-key">METHOD</span><span class="cp-val">${alert.rule_description}</span></div>
@@ -361,8 +398,8 @@ function Map2D({ alerts }) {
             <div class="srv-city">${(alert.destination_city || 'TARGET').toUpperCase()}</div>
             <div class="srv-ip">${alert.destination_ip}</div>
           </div>`,
-          iconSize: [100, 100], 
-          iconAnchor: [50, 50]
+          iconSize: [80, 80],
+          iconAnchor: [40, 40]
         });
 
         const dstMarker = L.marker(dst, { icon: dstIcon }).addTo(window.attackLayers);
@@ -376,7 +413,7 @@ function Map2D({ alerts }) {
             <div class="cp-body">
               <div class="cp-row"><span class="cp-key">SERVER IP</span><span class="cp-val">${alert.destination_ip}</span></div>
               <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.destination_city}, ${alert.destination_country}</span></div>
-              <div class="cp-row"><span class="cp-key">THREATS</span><span class="cp-val">${geo.length}</span></div>
+              <div class="cp-row"><span class="cp-key">THREATS</span><span class="cp-val">${geoRaw.length}</span></div>
               <div class="cp-row"><span class="cp-key">CRITICAL</span><span class="cp-val" style="color:#ff0044">${data.filter(a => a.rule_level >= 9).length}</span></div>
               <div class="cp-row"><span class="cp-key">HIGH</span><span class="cp-val" style="color:#ff8800">${data.filter(a => a.rule_level >= 7 && a.rule_level < 9).length}</span></div>
             </div>
@@ -387,9 +424,9 @@ function Map2D({ alerts }) {
           source_ip: alert.destination_ip,
           source_city: alert.destination_city,
           source_country: alert.destination_country,
-          rule_description: `Under ${geo.length} active threats`,
-          service: 'SERVER', 
-          port: 'ALL', 
+          rule_description: `Under ${geoRaw.length} active threats`,
+          service: 'SERVER',
+          port: 'ALL',
           mitre_technique: []
         }));
       }
@@ -398,11 +435,7 @@ function Map2D({ alerts }) {
     if (bounds.length > 0) {
       setTimeout(() => {
         if (gen !== window.animationGeneration) return;
-        map.fitBounds(bounds, { 
-          padding: [80, 80], 
-          maxZoom: 11, 
-          animate: false 
-        });
+        map.fitBounds(bounds, { padding: [80, 80], maxZoom: 11, animate: false });
         setTimeout(() => setBlackout(false), 300);
       }, 500);
     } else {
@@ -415,6 +448,8 @@ function Map2D({ alerts }) {
   const criticalCount = safeAlerts.filter(a => a.rule_level >= 9).length;
   const highCount = safeAlerts.filter(a => a.rule_level >= 7 && a.rule_level < 9).length;
   const mediumCount = safeAlerts.filter(a => a.rule_level >= 5 && a.rule_level < 7).length;
+  // Unique source IPs (what's actually rendered on map)
+  const uniqueSources = new Set(geoAlerts.map(a => a.source_ip)).size;
 
   return (
     <div className="map-wrap">
@@ -435,7 +470,7 @@ function Map2D({ alerts }) {
       <div className="hud-tr">
         <div className="hud-box">
           <span className="hud-num">{geoAlerts.length}</span>
-          <span className="hud-lbl">THREATS</span>
+          <span className="hud-lbl">{uniqueSources > 0 ? `${uniqueSources} SRC` : 'THREATS'}</span>
         </div>
         <div className="hud-box crit">
           <span className="hud-num">{criticalCount}</span>

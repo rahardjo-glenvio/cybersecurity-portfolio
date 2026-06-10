@@ -50,15 +50,17 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🗺️ **Live Attack Map** | Interactive Leaflet.js world map with animated arc trajectories and traveling pulse dots |
-| 📡 **Wazuh Integration** | Direct connection to Wazuh Manager API & OpenSearch Indexer (last 24h alerts) |
+| 🗺️ **Live Attack Map** | Interactive Leaflet.js world map with smooth animated arcs — multiple simultaneous traveling pulses per route, speed/intensity scaled by alert severity |
+| 📡 **Wazuh Integration** | Reads directly from Wazuh's `alerts.json` in real-time — no indexer/filebeat dependency, always up to date |
 | 🌍 **GeoIP Enrichment** | Automatic IP geolocation via `ip-api.com` for all external source IPs |
 | ⚡ **Severity HUD** | Real-time counters for Threats / Critical / High / Medium with glowing neon indicators |
 | 🔍 **Smart Search** | Full-text search with auto-complete across IP, country, service, MITRE technique |
+| 🤖 **WIDYA AI Analyst** | In-dashboard threat analyst chatbot — risk scoring, MITRE mapping, geo analysis, and detailed mitigation guidance generated from live alert data |
 | 🎭 **Demo Mode** | 12 built-in global attack scenarios, no Wazuh needed to try it |
 | 🔐 **JWT Auth** | Secure login with bcrypt password hashing and token expiry |
-| 🎨 **Cyberpunk UI** | Orbitron font · Scanline overlay · Animated scan beam · Glassmorphism HUD |
+| 🎨 **Cyberpunk UI** | Minimal single-row HUD header, Orbitron font, scanline overlay, glassmorphism panels |
 | 📊 **MITRE ATT&CK** | Every alert tagged with relevant technique (Brute Force, SQL Injection, etc.) |
+| ⚙️ **Map Performance** | Alerts clustered by source IP (max 40 markers) and lightweight CSS effects keep the map smooth even with hundreds of events |
 
 ---
 
@@ -74,11 +76,12 @@
 │  Leaflet.js (maps)           JWT Authentication         │
 │  Orbitron (Google Fonts)     bcrypt password hashing    │
 │  CSS3 Animations             ip-api.com (GeoIP)         │
+│  Canvas (WIDYA intro/spread) Direct alerts.json reader  │
 │                                                         │
 │  SIEM Integration                                       │
 │  ────────────────────────────────────────────────       │
 │  Wazuh Manager API (REST)                               │
-│  Wazuh Indexer / OpenSearch                             │
+│  Wazuh alerts.json (real-time, no indexer needed)       │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -87,10 +90,10 @@
 ## 📁 Project Structure
 
 ```
-sentinel-soc-dashboard/
+project-sentinel/
 │
 ├── backend/
-│   ├── server.js              # API routes: alert fetch, GeoIP, demo data
+│   ├── server.js              # API routes: alert fetch (alerts.json), GeoIP, demo data
 │   ├── auth.js                # JWT middleware & login/logout routes
 │   ├── scripts/
 │   │   └── generateHash.js    # Utility to bcrypt-hash admin password
@@ -99,15 +102,21 @@ sentinel-soc-dashboard/
 │
 ├── frontend/
 │   ├── public/
-│   │   └── index.html         # Loads Orbitron font from Google Fonts
+│   │   ├── index.html         # Loads Orbitron font from Google Fonts
+│   │   └── widya-face.png      # WIDYA AI avatar artwork
 │   ├── src/
 │   │   ├── App.js             # Root: auth check, data fetch, layout
 │   │   ├── App.css            # Header, menu, global styles
 │   │   ├── components/
-│   │   │   ├── Map2D.js       # Leaflet map + arc animations + HUD
+│   │   │   ├── Map2D.js       # Leaflet map + clustered arc animations + HUD
 │   │   │   ├── Map2D.css      # Scanlines, scan beam, glassmorphism HUD
 │   │   │   ├── AlertsTable.js # Searchable table with MITRE tags
 │   │   │   ├── AlertsTable.css
+│   │   │   ├── WIDYA.js       # AI threat-analyst chatbot (risk score, MITRE, recs)
+│   │   │   ├── WIDYA.css
+│   │   │   ├── WIDYAIntro.js  # Boot-up intro animation for WIDYA
+│   │   │   ├── WIDYAIntro.css
+│   │   │   ├── WIDYASpread.js # Canvas-based reveal/spread animation
 │   │   │   ├── Login.js       # Animated login page
 │   │   │   └── Login.css
 │   │   └── utils/
@@ -129,7 +138,7 @@ sentinel-soc-dashboard/
 
 ```bash
 git clone https://github.com/rahardjo-glenvio/cybersecurity-portfolio.git
-cd cybersecurity-portfolio/tools/sentinel-soc-dashboard
+cd cybersecurity-portfolio/tools/project-sentinel
 
 npm install --prefix backend
 npm install --prefix frontend
@@ -168,7 +177,7 @@ Open `http://localhost:3000` and login with your admin credentials.
 |--------|----------|:----:|-------------|
 | `POST` | `/api/auth/login` | ❌ | Login → returns JWT token |
 | `POST` | `/api/auth/logout` | ✅ | Invalidate session token |
-| `GET` | `/api/alerts` | ✅ | Live alerts from Wazuh Indexer (last 24h) |
+| `GET` | `/api/alerts` | ✅ | Live alerts read directly from Wazuh's `alerts.json` (last 24h) |
 | `GET` | `/api/alerts/demo` | ✅ | 12 static demo attacks from global IPs |
 | `GET` | `/api/test` | ✅ | Backend health check |
 
@@ -215,12 +224,12 @@ Includes 12 pre-configured global attack scenarios:
 [Internet Attackers]
         │
         ▼
-[Wazuh Agent] ──► [Wazuh Manager :55000]
+[Wazuh Agent] ──► [Wazuh Manager]
                           │
                           ▼
-                  [Wazuh Indexer / OpenSearch :9200]
+                  [/var/ossec/logs/alerts/alerts.json]
                           │
-                          ▼
+                          ▼ (tailed directly, real-time)
                   [Sentinel Backend :3001]
                     ├── /api/auth
                     ├── /api/alerts      ◄── GeoIP enrichment
@@ -228,10 +237,27 @@ Includes 12 pre-configured global attack scenarios:
                           │
                           ▼
                   [Sentinel Frontend :3000]
-                    ├── Attack Map (Leaflet)
+                    ├── Attack Map (Leaflet, clustered arcs)
                     ├── Severity HUD
-                    └── Alerts Table
+                    ├── Alerts Table
+                    └── WIDYA AI Threat Analyst
 ```
+
+---
+
+## 🤖 WIDYA — AI Threat Analyst
+
+WIDYA is an in-dashboard chat assistant that analyzes the live alert feed and answers questions about the current security posture — entirely client-side, no external AI API required.
+
+- **Risk scoring** — computes an overall `LOW / MEDIUM / HIGH / CRITICAL` risk score from severity-weighted alert counts
+- **Severity breakdown** — Critical / High / Medium / Low counts with SLA-style guidance per tier
+- **Attack vector analysis** — top targeted services (SSH, HTTP, RDP, MySQL, etc.) with counts
+- **Geographic analysis** — top source countries/regions for inbound attacks
+- **MITRE ATT&CK mapping** — maps observed techniques to tactics (Initial Access, Credential Access, Defense Evasion, Reconnaissance) with explanations
+- **Timeline view** — recent alerts with severity tags, full descriptions, and city/country/MITRE/rule-ID metadata
+- **Tailored recommendations** — multi-sentence, configuration-specific hardening and mitigation steps based on what's actually being attacked
+- **Full report / brief mode** — multi-paragraph executive summary combining all of the above
+- **Boot-up & reveal animations** — `WIDYAIntro.js` (intro sequence) and `WIDYASpread.js` (canvas-based spread/reveal effect) for a polished first impression
 
 ---
 
