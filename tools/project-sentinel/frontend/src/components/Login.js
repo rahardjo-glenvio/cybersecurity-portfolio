@@ -3,7 +3,8 @@ import axios from 'axios';
 import { auth } from '../utils/auth';
 import './Login.css';
 
-const API_BASE = `http://${window.location.hostname}:3001`;
+const API_PORT = process.env.REACT_APP_API_PORT || '3001';
+const API_BASE = `http://${window.location.hostname}:${API_PORT}`;
 
 // Perfectly aligned shield — all shared edges use IDENTICAL coordinates
 // Split: horizontal y=118, y=158  |  vertical x=100

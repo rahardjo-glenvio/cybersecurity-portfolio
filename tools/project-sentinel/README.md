@@ -52,7 +52,8 @@
 |---------|-------------|
 | 🗺️ **Live Attack Map** | Interactive Leaflet.js world map with smooth animated arcs - multiple simultaneous traveling pulses per route, speed/intensity scaled by alert severity |
 | 📡 **Wazuh Integration** | Reads directly from Wazuh's `alerts.json` in real-time - no indexer/filebeat dependency, always up to date |
-| 🌍 **GeoIP Enrichment** | Automatic IP geolocation via `ip-api.com` for all external source IPs |
+| ⚡ **Streaming Log Reader** | Walks `alerts.json` backwards in chunks and stops at the time cutoff - a 44 MB log costs 12 ms and 0.75 MB of reads, with no shell out to `tail` |
+| 🌍 **GeoIP Enrichment** | IP geolocation via `ip-api.com`, deduplicated and **batched 100 IPs per call**, with a 12 h disk-backed cache - typically 1 HTTP request per refresh, 0 when warm |
 | ⚡ **Severity HUD** | Real-time counters for Threats / Critical / High / Medium with glowing neon indicators |
 | 🔍 **Smart Search** | Full-text search with auto-complete across IP, country, service, MITRE technique |
 | 🤖 **JAGAD AI Analyst** | In-dashboard threat analyst chatbot - risk scoring, MITRE mapping, geo analysis, and detailed mitigation guidance generated from live alert data |
@@ -93,8 +94,12 @@
 project-sentinel/
 │
 ├── backend/
-│   ├── server.js              # API routes: alert fetch (alerts.json), GeoIP, demo data
+│   ├── server.js              # API routes: alerts, demo data, health
 │   ├── auth.js                # JWT middleware & login/logout routes
+│   ├── lib/
+│   │   ├── alertsReader.js    # Async reverse-chunk reader for alerts.json
+│   │   ├── geoip.js           # Deduplicated, batched, cached GeoIP resolver
+│   │   └── alertsService.js   # Pipeline orchestration + response cache
 │   ├── scripts/
 │   │   └── generateHash.js    # Utility to bcrypt-hash admin password
 │   ├── package.json
@@ -153,7 +158,7 @@ cp backend/.env.example backend/.env
 
 Generate admin password hash:
 ```bash
-node backend/scripts/generateHash.js
+npm run hash --prefix backend
 # Paste the output hash into .env as ADMIN_PASSWORD_HASH
 ```
 
@@ -161,13 +166,18 @@ node backend/scripts/generateHash.js
 
 ```bash
 # Terminal 1: Backend API (port 3001)
-cd backend && node server.js
+npm start --prefix backend
 
 # Terminal 2: Frontend dev server (port 3000)
-cd frontend && npm start
+npm start --prefix frontend
 ```
 
 Open `http://localhost:3000` and login with your admin credentials.
+
+> **Ports already taken?** Set `PORT` in `backend/.env`, then create
+> `frontend/.env` with `PORT=<react port>` and
+> `REACT_APP_API_PORT=<backend port>`. The frontend derives its API base from
+> the hostname you loaded it on, so LAN access keeps working.
 
 ---
 
@@ -177,9 +187,50 @@ Open `http://localhost:3000` and login with your admin credentials.
 |--------|----------|:----:|-------------|
 | `POST` | `/api/auth/login` | ❌ | Login → returns JWT token |
 | `POST` | `/api/auth/logout` | ✅ | Invalidate session token |
-| `GET` | `/api/alerts` | ✅ | Live alerts read directly from Wazuh's `alerts.json` (last 24h) |
+| `GET` | `/api/alerts` | ✅ | Live alerts read directly from Wazuh's `alerts.json` |
 | `GET` | `/api/alerts/demo` | ✅ | 12 static demo attacks from global IPs |
-| `GET` | `/api/test` | ✅ | Backend health check |
+| `GET` | `/api/test` | ✅ | Backend health check + GeoIP cache metrics |
+
+`/api/alerts` accepts two query parameters:
+
+| Param | Default | Range | Meaning |
+|-------|---------|-------|---------|
+| `hours` | `24` | 1–168 | How far back to look |
+| `limit` | `500` | 1–5000 | Max **relevant** alerts to return |
+
+Every response carries a `meta` block describing how it was produced — useful
+for tuning and for confirming the caches are doing their job:
+
+```jsonc
+{
+  "success": true,
+  "count": 500,
+  "alerts": [ /* ... */ ],
+  "meta": {
+    "window_hours": 24,
+    "limit": 500,
+    "read": {
+      "bytesScanned": 786432,      // stopped after 768 KB of a 44 MB log
+      "linesScanned": 1017,
+      "stoppedBecause": "max-alerts",
+      "readMs": 12.1
+    },
+    "geo": {
+      "requested": 500,            // alerts needing a location
+      "unique": 30,                // distinct IPs behind them
+      "cacheHits": 30,
+      "lookedUp": 0,
+      "batchesSent": 0             // zero HTTP calls on a warm cache
+    },
+    "total_ms": 13.6,
+    "cached": false                // true = memoised, alerts.json unchanged
+  }
+}
+```
+
+> `meta` always describes the **build** that produced the payload. When
+> `cached` is `true` the timings are the ones from that original build, not the
+> (near-zero) cost of replaying it.
 
 ---
 
@@ -229,10 +280,10 @@ Includes 12 pre-configured global attack scenarios:
                           ▼
                   [/var/ossec/logs/alerts/alerts.json]
                           │
-                          ▼ (tailed directly, real-time)
+                          ▼ (reverse chunk read, stops at time cutoff)
                   [Sentinel Backend :3001]
                     ├── /api/auth
-                    ├── /api/alerts      ◄── GeoIP enrichment
+                    ├── /api/alerts      ◄── batched GeoIP + mtime cache
                     └── /api/alerts/demo
                           │
                           ▼
@@ -242,6 +293,73 @@ Includes 12 pre-configured global attack scenarios:
                     ├── Alerts Table
                     └── JAGAD AI Threat Analyst
 ```
+
+---
+
+## ⚙️ Ingestion Pipeline
+
+Wazuh appends one JSON object per line to `alerts.json`. SENTINEL reads that
+file directly — no indexer, no Filebeat — and turns it into map-ready events in
+four stages:
+
+```
+alerts.json (append-only, newest at EOF)
+      │
+      │  1. READ    lib/alertsReader.js
+      │     Walks the file BACKWARDS in 256 KB chunks and stops as soon as it
+      │     has enough alerts or crosses the time cutoff. Cost scales with the
+      │     window you ask for, not with the size of the log.
+      ▼
+      │  2. FILTER  lib/alertsService.js
+      │     Noise rules (level < 3, PAM session open/close, netstat churn) are
+      │     applied WHILE streaming, so the limit counts alerts you'll actually
+      │     see rather than lines read.
+      ▼
+      │  3. ENRICH  lib/geoip.js
+      │     Source IPs are deduplicated, served from cache where possible, and
+      │     whatever is left goes to ip-api.com's /batch endpoint — 100 IPs per
+      │     HTTP call instead of one call per alert.
+      ▼
+      │  4. CACHE   lib/alertsService.js
+      │     The finished payload is memoised against alerts.json's mtime+size.
+      │     Unchanged log ⇒ replayed instantly. Concurrent requests share one
+      │     in-flight build instead of stampeding the reader.
+      ▼
+   GET /api/alerts
+```
+
+### Why it used to be slow
+
+Measured against a synthetic 44 MB / 60,000-line Wazuh log spanning 48 hours
+with 30 distinct attacker IPs:
+
+| Problem | Effect |
+|---|---|
+| `execSync("tail -n 1500 …")` | Spawned a shell **and blocked the Node event loop for ~91 ms per request** — the server could serve nothing else meanwhile. Also `tail`-dependent, so it silently returned nothing on Windows. |
+| One `ip-api.com/json/<ip>` call **per alert** | 244 HTTP calls for 244 alerts that came from only **30 unique IPs** — 87.7% pure waste. |
+| ip-api free tier is 45 req/min | Those 244 calls blew straight past the limit: ~45 succeeded, the rest got HTTP 429. |
+| Geo failures fell back to `getPrivateCoords()` | Rate-limited attackers were drawn **on top of the defended server**, silently corrupting the map. |
+| No cache of any kind | Every refresh redid the whole thing from scratch. |
+| Fixed `tail -n 1500` cap | The "last 24 h" window really only covered **0.40 h** of this log. The cap, not the cutoff, decided what you saw. |
+
+### What it costs now
+
+| Scenario | Before | After |
+|---|---:|---:|
+| Log read (44 MB file) | 91 ms, blocking, 1.10 MB into memory | **12 ms**, async, 0.75 MB |
+| GeoIP HTTP calls (500 alerts / 30 IPs) | 244 | **1** |
+| GeoIP HTTP calls, cache warm | 244 | **0** |
+| First request (cold cache) | rate-limited, partly wrong | **110 ms** |
+| Repeat request, log unchanged | full rework | **7.5 ms** |
+| First request after a process restart | full rework + 244 calls | **23 ms**, 0 calls |
+| Relevant alerts returned for `limit=500` | 244 | **500** |
+| Time actually covered at that limit | 0.40 h | **0.81 h** |
+| `hours=48&limit=5000` | not possible | **146 ms**, covers 8.13 h |
+
+The GeoIP cache is written to `backend/.cache/geoip.json` (gitignored), so a
+restart no longer costs a single lookup. Locations live 12 h, failures are
+negative-cached for 30 min, and an IP that can't be resolved now returns
+`source_lat: null` and is **excluded from the map** instead of being faked.
 
 ---
 

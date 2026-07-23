@@ -11,6 +11,7 @@ node_modules/
 # ===== BUILD OUTPUT =====
 frontend/build/
 frontend/.cache/
+backend/.cache/
 
 # ===== LOGS & RUNTIME =====
 *.log
@@ -27,3 +28,8 @@ components.backup/
 # ===== OS =====
 .DS_Store
 Thumbs.db
+
+# ===== EDITOR / LOCAL TOOLING =====
+.claude/
+.vscode/
+.idea/

@@ -1,15 +1,17 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const helmet = require('helmet');
 const https = require('https');
 const os = require('os');
-const fs = require('fs');
-const { execSync } = require('child_process');
 require('dotenv').config();
+
+const { createAlertsService } = require('./lib/alertsService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
 app.use(cors());
 app.use(express.json());
 const { router: authRouter, authenticateToken } = require("./auth");
@@ -41,153 +43,43 @@ const wazuhAPI = axios.create({
   }
 });
 
-const detectService = (desc) => {
-  const d = (desc || '').toLowerCase();
-  if (d.includes('sshd') || d.includes('ssh')) return { service: 'SSH', port: 22 };
-  if (d.includes('ftp')) return { service: 'FTP', port: 21 };
-  if (d.includes('https') || d.includes('ssl')) return { service: 'HTTPS', port: 443 };
-  if (d.includes('http') || d.includes('apache') || d.includes('nginx')) return { service: 'HTTP', port: 80 };
-  if (d.includes('mysql')) return { service: 'MySQL', port: 3306 };
-  if (d.includes('rdp')) return { service: 'RDP', port: 3389 };
-  if (d.includes('smtp')) return { service: 'SMTP', port: 25 };
-  if (d.includes('dns')) return { service: 'DNS', port: 53 };
-  if (d.includes('integrity')) return { service: 'FIM', port: 0 };
-  if (d.includes('pam') || d.includes('sudo')) return { service: 'AUTH', port: 0 };
-  return { service: 'OTHER', port: 0 };
+const TARGET = {
+  lat: parseFloat(process.env.SERVER_LAT || -7.4333),
+  lon: parseFloat(process.env.SERVER_LON || 109.2333),
+  city: process.env.SERVER_CITY || 'Server',
+  country: process.env.SERVER_COUNTRY || 'Indonesia'
 };
 
-// Dynamically derive /24 subnet from server IP
-const LOCAL_SUBNET = SERVER_IP.split('.').slice(0, 3).join('.') + '.';
-
-const isPrivateIP = (ip) => {
-  if (!ip || ip === 'unknown') return true;
-  if (ip.startsWith('10.') || ip.startsWith('192.168.') || ip === '127.0.0.1') return true;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
-  if (ip.startsWith(LOCAL_SUBNET)) return true;
-  return false;
-};
-
-const getPrivateCoords = (ip) => {
-  const hash = ip.split('.').reduce((a, n) => a + parseInt(n || 0), 0);
-  return {
-    country: 'Local Network',
-    city: 'Internal',
-    lat: parseFloat(process.env.SERVER_LAT || -7.4333) + ((hash % 100) - 50) * 0.002,
-    lon: parseFloat(process.env.SERVER_LON || 109.2333) + (((hash * 7) % 100) - 50) * 0.002
-  };
-};
-
-app.get('/api/test', authenticateToken, (req, res) => {
-  res.json({ message: 'Backend OK', ip: SERVER_IP });
-});
-
-// ─── Direct alerts.json reader (real-time, no indexer/filebeat dependency) ───
 const ALERTS_JSON_PATH = process.env.ALERTS_JSON_PATH || '/var/ossec/logs/alerts/alerts.json';
 
-function readAlertsFromFile(hours = 24, maxAlerts = 500) {
-  try {
-    // tail the last N lines so this stays fast even on multi-GB log files
-    const raw = execSync(`tail -n 1500 ${ALERTS_JSON_PATH}`, { timeout: 5000, maxBuffer: 20 * 1024 * 1024 }).toString();
-    const lines = raw.split('\n').filter(l => l.trim());
-    const cutoff = Date.now() - hours * 3600 * 1000;
-    const alerts = [];
+const alertsService = createAlertsService({
+  alertsPath: ALERTS_JSON_PATH,
+  serverIp: SERVER_IP,
+  target: TARGET
+});
 
-    for (let i = lines.length - 1; i >= 0 && alerts.length < maxAlerts; i--) {
-      try {
-        const a = JSON.parse(lines[i]);
-        if (a.timestamp && new Date(a.timestamp).getTime() >= cutoff) {
-          alerts.push(a);
-        }
-      } catch (e) { /* skip malformed line */ }
-    }
-    return alerts; // already newest-first
-  } catch (e) {
-    console.error('readAlertsFromFile error:', e.message);
-    return [];
-  }
-}
+app.get('/api/test', authenticateToken, (req, res) => {
+  res.json({ message: 'Backend OK', ip: SERVER_IP, geo_cache: alertsService.getGeoMetrics() });
+});
 
-// Real alerts — read directly from Wazuh's alerts.json (always real-time)
+// Real alerts — streamed straight out of Wazuh's alerts.json.
+// Reading, filtering, GeoIP batching and caching all live in lib/alertsService.
 app.get('/api/alerts', authenticateToken, async (req, res) => {
   try {
-    const rawAlerts = readAlertsFromFile(24, 500);
+    const hours = Math.min(Math.max(parseInt(req.query.hours, 10) || 24, 1), 168);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 500, 1), 5000);
 
-    const raw = rawAlerts.map((s, idx) => {
-      const srcip = s.data?.srcip
-        || s.data?.src_ip
-        || s.data?.win?.eventdata?.ipAddress
-        || s.agent?.ip
-        || null;
-      return {
-        id: s.id || `file-${idx}`,
-        timestamp: s.timestamp,
-        rule_id: s.rule?.id,
-        rule_description: s.rule?.description,
-        rule_level: s.rule?.level,
-        source_ip: srcip || SERVER_IP,
-        has_external_ip: !!srcip && !isPrivateIP(srcip),
-        destination_ip: SERVER_IP,
-        mitre_technique: s.rule?.mitre?.technique || [],
-        full_log: s.full_log,
-        agent_name: s.agent?.name || 'wazuh-manager'
-      };
-    });
+    const payload = await alertsService.getAlerts({ hours, limit });
 
-    // Filter noise / low-value events
-    const relevant = raw.filter(a => {
-      const d = (a.rule_description || '').toLowerCase();
-      if (d.includes('pam: login session opened') && a.rule_level <= 3) return false;
-      if (d.includes('pam: login session closed')) return false;
-      if (d.includes('netstat listening ports')) return false;
-      if (a.rule_level < 3) return false;
-      return true;
-    });
+    const m = payload.meta;
+    console.log(
+      `Alerts: ${payload.count} in ${m.total_ms?.toFixed(0) ?? '-'}ms` +
+      `${m.cached ? ' (cached)' : ''} | read ${m.read.linesScanned} lines ` +
+      `(${(m.read.bytesScanned / 1024).toFixed(0)}KB, stop=${m.read.stoppedBecause}) | ` +
+      `geo ${m.geo.unique} unique, ${m.geo.cacheHits} cached, ${m.geo.batchesSent} batch(es)`
+    );
 
-    console.log(`Alerts (alerts.json): ${raw.length} total, ${relevant.length} relevant`);
-
-    const SERVER_LAT = parseFloat(process.env.SERVER_LAT || -7.4333);
-    const SERVER_LON = parseFloat(process.env.SERVER_LON || 109.2333);
-    const SERVER_CITY = process.env.SERVER_CITY || 'Server';
-    const SERVER_COUNTRY = process.env.SERVER_COUNTRY || 'Indonesia';
-
-    const enriched = await Promise.all(relevant.map(async (alert) => {
-      const svc = detectService(alert.rule_description);
-      let geo = null;
-
-      if (alert.has_external_ip) {
-        try {
-          const geoRes = await axios.get(`http://ip-api.com/json/${alert.source_ip}`, { timeout: 3000 });
-          if (geoRes.data.status === 'success') {
-            geo = {
-              country: geoRes.data.country,
-              city: geoRes.data.city,
-              lat: geoRes.data.lat,
-              lon: geoRes.data.lon
-            };
-          }
-        } catch (e) {
-          geo = getPrivateCoords(alert.source_ip);
-        }
-      } else {
-        geo = { country: SERVER_COUNTRY, city: SERVER_CITY, lat: SERVER_LAT, lon: SERVER_LON };
-      }
-
-      return {
-        ...alert,
-        service: svc.service,
-        port: svc.port,
-        source_country: geo?.country || 'Unknown',
-        source_city: geo?.city || 'Unknown',
-        source_lat: geo?.lat || null,
-        source_lon: geo?.lon || null,
-        destination_country: SERVER_COUNTRY,
-        destination_city: SERVER_CITY,
-        destination_lat: SERVER_LAT,
-        destination_lon: SERVER_LON
-      };
-    }));
-
-    res.json({ success: true, count: enriched.length, alerts: enriched });
+    res.json(payload);
   } catch (error) {
     console.error('Alerts error:', error.message);
     res.status(500).json({ error: error.message });

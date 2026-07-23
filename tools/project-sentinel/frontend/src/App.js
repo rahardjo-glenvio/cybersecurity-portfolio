@@ -7,7 +7,8 @@ import JAGAD from './components/JAGAD';
 import { auth } from './utils/auth';
 import './App.css';
 
-const API_BASE = `http://${window.location.hostname}:3001`;
+const API_PORT = process.env.REACT_APP_API_PORT || '3001';
+const API_BASE = `http://${window.location.hostname}:${API_PORT}`;
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
