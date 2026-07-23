@@ -1,8 +1,6 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
 const helmet = require('helmet');
-const https = require('https');
 const os = require('os');
 require('dotenv').config();
 
@@ -10,12 +8,6 @@ const { createAlertsService } = require('./lib/alertsService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
-app.use(cors());
-app.use(express.json());
-const { router: authRouter, authenticateToken } = require("./auth");
-app.use("/api/auth", authRouter);
 
 // Detect local IP
 const getLocalIP = () => {
@@ -33,15 +25,45 @@ const getLocalIP = () => {
 const SERVER_IP = getLocalIP();
 console.log('Server IP:', SERVER_IP);
 
-// Wazuh Manager API client
-const wazuhAPI = axios.create({
-  baseURL: process.env.WAZUH_API_URL || 'https://127.0.0.1:55000',
-  httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-  auth: {
-    username: process.env.WAZUH_USERNAME,
-    password: process.env.WAZUH_PASSWORD
+// ─── CORS ───────────────────────────────────────────────────────────────────
+// The dashboard builds its API base from window.location.hostname, so the
+// Origin it sends is whatever host you loaded the dashboard on. Set
+// CORS_ORIGINS to pin the allowlist down exactly; with it unset we fall back to
+// loopback + RFC1918 hosts on any port, which is where a homelab SOC lives.
+const PRIVATE_HOST = /^(?:localhost|\[::1\]|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)$/i;
+
+const stripSlash = (s) => s.trim().replace(/\/+$/, '');
+
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(stripSlash)
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  // No Origin header means this is not a browser cross-origin request (curl,
+  // a health probe, server-to-server). CORS does not apply; the JWT still does.
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.length) return ALLOWED_ORIGINS.includes(stripSlash(origin));
+  try {
+    return PRIVATE_HOST.test(new URL(origin).hostname);
+  } catch {
+    return false;
   }
-});
+};
+
+console.log(
+  ALLOWED_ORIGINS.length
+    ? `CORS allowlist: ${ALLOWED_ORIGINS.join(', ')}`
+    : 'CORS allowlist: (CORS_ORIGINS unset) loopback + private LAN ranges only'
+);
+
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
+// Disallowed origins simply get no CORS headers, so the browser blocks the
+// read. Rejecting with an error here would turn it into a confusing 500.
+app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)) }));
+app.use(express.json());
+const { router: authRouter, authenticateToken } = require("./auth");
+app.use("/api/auth", authRouter);
 
 const TARGET = {
   lat: parseFloat(process.env.SERVER_LAT || -7.4333),

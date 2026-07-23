@@ -81,8 +81,8 @@
 │                                                         │
 │  SIEM Integration                                       │
 │  ────────────────────────────────────────────────       │
-│  Wazuh Manager API (REST)                               │
 │  Wazuh alerts.json (real-time, no indexer needed)       │
+│  No Filebeat, no Indexer, no Manager API required       │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -262,10 +262,31 @@ Includes 12 pre-configured global attack scenarios:
 - ✅ All credentials via **environment variables**, nothing hardcoded in source
 - ✅ JWT tokens with expiry + server-side invalidation on logout
 - ✅ bcrypt password hashing (cost factor 12)
-- ✅ Rate limiting via `express-rate-limit`
+- ✅ Rate limiting via `express-rate-limit` on the login route
 - ✅ Security headers via `helmet`
-- ✅ CORS restricted to local network
-- ⚠️ Wazuh HTTPS uses `rejectUnauthorized: false` (internal network use only)
+- ✅ CORS allowlist — set `CORS_ORIGINS` for an exact list, or leave it unset to
+  allow only loopback and RFC1918 (`10.x`, `192.168.x`, `172.16–31.x`) origins
+
+### CORS behaviour
+
+The dashboard derives its API base from `window.location.hostname`, so the
+`Origin` it sends is whatever host you loaded it on. That means the allowlist
+has to match how you actually reach the dashboard:
+
+| `CORS_ORIGINS` | Who may call the API from a browser |
+|---|---|
+| unset *(default)* | Any loopback or private-LAN host, on any port |
+| `http://10.0.0.5:3000` | Only that exact origin |
+| `http://localhost:3000,http://10.0.0.5:3000` | Either of those two |
+
+Requests with **no** `Origin` header (curl, health probes, server-to-server) are
+not browser cross-origin requests, so CORS does not apply to them — but they
+still need a valid JWT like everything else. Disallowed origins simply receive
+no `Access-Control-Allow-Origin` header, and the browser blocks the response.
+
+> Expose this backend to the public internet and JWT auth becomes the *only*
+> thing standing between an attacker and your alert feed. Keep it on the LAN or
+> behind a VPN.
 
 ---
 
