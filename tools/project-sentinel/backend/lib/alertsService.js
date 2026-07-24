@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const { readRecentAlerts } = require('./alertsReader');
-const { resolveMany, getMetrics: getGeoMetrics } = require('./geoip');
+const { resolveMany, getMetrics: getGeoMetrics, getOverride } = require('./geoip');
 
 // Serve a rebuilt result for at least this long even if the log keeps growing,
 // so a burst of dashboard refreshes cannot stampede the reader.
@@ -55,7 +55,37 @@ function makeIsPrivateIP(serverIp) {
   };
 }
 
-function createAlertsService({ alertsPath, serverIp, target }) {
+// client.keys lists every enrolled agent as `id name ip key` (lines starting
+// with `!` are tombstones for removed agents). The manager itself is agent 000
+// and is never written there, so we always prepend it.
+function readAgents(clientKeysPath, serverName) {
+  const agents = [{ id: '000', name: serverName, ip: '127.0.0.1', local: true }];
+  try {
+    const raw = fs.readFileSync(clientKeysPath, 'utf8');
+    for (const line of raw.split('\n')) {
+      const t = line.trim();
+      if (!t || t.startsWith('#') || t.startsWith('!')) continue;
+      const [id, name, ip] = t.split(/\s+/);
+      if (!id || !name) continue;
+      agents.push({ id, name, ip: ip || 'any', local: false });
+    }
+  } catch {
+    // No client.keys, or not readable (service not in group wazuh): the
+    // dropdown still works, it just shows the manager alone.
+  }
+  const seen = new Set();
+  return agents
+    .filter((a) => (seen.has(a.id) ? false : seen.add(a.id)))
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function createAlertsService({
+  alertsPath,
+  serverIp,
+  target,
+  serverName = 'wazuh-manager',
+  clientKeysPath = '/var/ossec/etc/client.keys'
+}) {
   const isRelevant = makeRelevanceFilter();
   const isPrivateIP = makeIsPrivateIP(serverIp);
 
@@ -71,14 +101,21 @@ function createAlertsService({ alertsPath, serverIp, target }) {
     }
   }
 
-  async function build({ hours, limit }) {
+  async function build({ hours, limit, agentId = 'all' }) {
     const started = process.hrtime.bigint();
+
+    // Filtering by agent inside the relevance test means the byte-budget/limit
+    // applies to that agent's alerts, so a quiet agent still fills a full page
+    // instead of being crowded out by a noisy one.
+    const relevance = agentId === 'all'
+      ? isRelevant
+      : (a) => isRelevant(a) && (a.agent?.id === agentId);
 
     const { alerts: rawAlerts, stats: readStats } = await readRecentAlerts({
       filePath: alertsPath,
       hours,
       maxAlerts: limit,
-      isRelevant
+      isRelevant: relevance
     });
 
     const normalized = rawAlerts.map((s, idx) => {
@@ -87,7 +124,11 @@ function createAlertsService({ alertsPath, serverIp, target }) {
         || s.data?.win?.eventdata?.ipAddress
         || s.agent?.ip
         || null;
-      const external = !!srcip && !isPrivateIP(srcip);
+      // "Eksternal" (digambar sebagai penyerang di peta) bila IP publik ATAU
+      // punya override manual di known-locations.json. Override membuat IP
+      // privat lab (mis. sumber hydra) tampil di lokasi yang dipilih operator,
+      // bukan menumpuk di titik server. Tanpa override, perilaku default sama.
+      const external = !!srcip && (!isPrivateIP(srcip) || !!getOverride(srcip));
       const svc = detectService(s.rule?.description);
       return {
         id: s.id || `file-${idx}`,
@@ -100,22 +141,28 @@ function createAlertsService({ alertsPath, serverIp, target }) {
         destination_ip: serverIp,
         mitre_technique: s.rule?.mitre?.technique || [],
         full_log: s.full_log,
+        agent_id: s.agent?.id || '000',
         agent_name: s.agent?.name || 'wazuh-manager',
+        agent_ip: s.agent?.ip || null,
         service: svc.service,
         port: svc.port
       };
     });
 
     // One deduplicated, batched geo round trip for the whole page of alerts.
-    const externalIps = normalized.filter(a => a.has_external_ip).map(a => a.source_ip);
+    // IP dengan override manual dilewati dari lookup jaringan (lokasinya sudah
+    // pasti), termasuk IP privat lab yang sengaja dipetakan.
+    const externalIps = normalized
+      .filter(a => a.has_external_ip && !getOverride(a.source_ip))
+      .map(a => a.source_ip);
     const { locations, stats: geoStats } = await resolveMany(externalIps);
 
     const enriched = normalized.map((alert) => {
       let geo;
       if (alert.has_external_ip) {
-        // null when the lookup failed - the map skips these rather than
-        // drawing the attacker on top of the defended server.
-        geo = locations.get(alert.source_ip) || null;
+        // Override manual menang; lalu hasil GeoIP; null bila gagal - peta
+        // melewati yang null daripada menggambar penyerang menimpa server.
+        geo = getOverride(alert.source_ip) || locations.get(alert.source_ip) || null;
       } else {
         geo = { country: target.country, city: target.city, lat: target.lat, lon: target.lon };
       }
@@ -141,6 +188,7 @@ function createAlertsService({ alertsPath, serverIp, target }) {
       meta: {
         window_hours: hours,
         limit,
+        agent: agentId,
         read: readStats,
         geo: geoStats,
         total_ms: Number(process.hrtime.bigint() - started) / 1e6,
@@ -151,8 +199,8 @@ function createAlertsService({ alertsPath, serverIp, target }) {
 
   const replay = (payload) => ({ ...payload, meta: { ...payload.meta, cached: true } });
 
-  async function getAlerts({ hours = 24, limit = 500 } = {}) {
-    const shape = `${hours}:${limit}`;
+  async function getAlerts({ hours = 24, limit = 500, agentId = 'all' } = {}) {
+    const shape = `${hours}:${limit}:${agentId}`;
     const key = `${await fileSignature()}:${shape}`;
 
     if (cached) {
@@ -170,7 +218,7 @@ function createAlertsService({ alertsPath, serverIp, target }) {
     // Collapse concurrent misses into one read instead of stampeding the file.
     if (inFlight) return inFlight;
 
-    inFlight = build({ hours, limit })
+    inFlight = build({ hours, limit, agentId })
       .then((payload) => {
         cached = { key, shape, payload, builtAt: Date.now() };
         return payload;
@@ -180,7 +228,9 @@ function createAlertsService({ alertsPath, serverIp, target }) {
     return inFlight;
   }
 
-  return { getAlerts, getGeoMetrics, detectService };
+  const listAgents = () => readAgents(clientKeysPath, serverName);
+
+  return { getAlerts, getGeoMetrics, detectService, listAgents };
 }
 
 module.exports = { createAlertsService, detectService };

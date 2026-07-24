@@ -89,10 +89,26 @@ const TARGET = {
 
 const ALERTS_JSON_PATH = process.env.ALERTS_JSON_PATH || '/var/ossec/logs/alerts/alerts.json';
 
+const CLIENT_KEYS_PATH = process.env.CLIENT_KEYS_PATH || '/var/ossec/etc/client.keys';
+
 const alertsService = createAlertsService({
   alertsPath: ALERTS_JSON_PATH,
   serverIp: SERVER_IP,
-  target: TARGET
+  target: TARGET,
+  serverName: os.hostname(),
+  clientKeysPath: CLIENT_KEYS_PATH
+});
+
+// List of monitorable sources for the dashboard's scope dropdown: the manager
+// itself (agent 000, "Local") plus every enrolled Wazuh agent. Auth-gated like
+// the alerts it scopes.
+app.get('/api/agents', authenticateToken, (req, res) => {
+  try {
+    res.json({ agents: alertsService.listAgents() });
+  } catch (error) {
+    console.error('Agents error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/api/test', authenticateToken, (req, res) => {
@@ -105,8 +121,12 @@ app.get('/api/alerts', authenticateToken, async (req, res) => {
   try {
     const hours = Math.min(Math.max(parseInt(req.query.hours, 10) || 24, 1), 168);
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 500, 1), 5000);
+    // 'all' or a numeric agent id; anything else falls back to 'all' so a bad
+    // query can never turn into an unfiltered internal error.
+    const rawAgent = (req.query.agent || 'all').toString();
+    const agentId = /^(all|\d{1,5})$/.test(rawAgent) ? rawAgent : 'all';
 
-    const payload = await alertsService.getAlerts({ hours, limit });
+    const payload = await alertsService.getAlerts({ hours, limit, agentId });
 
     const m = payload.meta;
     console.log(

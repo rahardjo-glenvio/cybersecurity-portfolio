@@ -786,6 +786,25 @@ body {
   opacity: 0.9;
 }
 
+/* ID agent (mis. #001) di kanan item scope; margin-left:auto mendorongnya ke
+   tepi, dan menu-check (bila aktif) menyusul setelahnya. */
+.menu-item-agentid {
+  margin-left: auto;
+  color: #4a6a80;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+
+.menu-item.active .menu-item-agentid,
+.menu-item:hover .menu-item-agentid {
+  color: #00ccff;
+}
+
+.menu-item.active .menu-item-agentid + .menu-check {
+  margin-left: 8px;
+}
+
 .menu-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(0,204,255,0.15), transparent);

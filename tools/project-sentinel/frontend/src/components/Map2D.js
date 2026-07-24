@@ -77,11 +77,17 @@ function ensureTicker() {
   window.__snTickerId = requestAnimationFrame(frame);
 }
 
-function Map2D({ alerts, status }) {
+function Map2D({ alerts, status, sourceKey }) {
   const mapRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [blackout, setBlackout] = useState(false);
+
+  // Diffing real-time: id alert yang sudah tergambar, dan konteks (sumber) saat
+  // ini. Ganti sumber => full render; alert baru pada sumber sama => tambah
+  // titik secara inkremental tanpa mereset peta.
+  const seenIdsRef = useRef(new Set());
+  const sourceKeyRef = useRef(null);
 
   const smoothTransition = (action) => {
     setBlackout(true);
@@ -134,15 +140,30 @@ function Map2D({ alerts, status }) {
     };
   }, []);
 
+  // Render alerts: full saat konteks (sumber) berubah, inkremental saat hanya
+  // ada alert baru pada sumber yang sama.
   useEffect(() => {
     if (!mapReady) return;
 
-    if (alerts && alerts.length > 0) {
-      renderAttacks(alerts);
-    } else {
-      clearMap();
+    const key = sourceKey || '';
+    const list = alerts || [];
+
+    if (key !== sourceKeyRef.current) {
+      // Konteks berbeda (Demo/Real/agent/pencarian berubah) → gambar ulang penuh.
+      sourceKeyRef.current = key;
+      seenIdsRef.current = new Set(list.map(a => a.id));
+      if (list.length > 0) renderAttacks(list);
+      else clearMap();
+      return;
     }
-  }, [alerts, mapReady]);
+
+    // Konteks sama → hanya proses alert yang belum pernah digambar.
+    if (list.length === 0) return;
+    const fresh = list.filter(a => !seenIdsRef.current.has(a.id));
+    if (fresh.length === 0) return;
+    fresh.forEach(a => seenIdsRef.current.add(a.id));
+    addRealtimeAttacks(fresh);
+  }, [alerts, mapReady, sourceKey]);
 
   const stopAllAnimations = () => {
     window.animationGeneration = (window.animationGeneration || 0) + 1;
@@ -152,11 +173,18 @@ function Map2D({ alerts, status }) {
     window.__snTravelers = [];
   };
 
+  const resetRegistry = () => {
+    // Registry sumber-serangan aktif (untuk dedup & pembaruan inkremental).
+    window.__snBySource = new Map();
+    window.__snDstSeen = new Set();
+  };
+
   const clearMap = () => {
     if (!window.attackLayers) return;
 
     setBlackout(true);
     stopAllAnimations();
+    resetRegistry();
     window.attackLayers.clearLayers();
 
     if (window.socMap) {
@@ -210,6 +238,7 @@ function Map2D({ alerts, status }) {
     window.animationGeneration = 0;
     window.pulseTimeouts = [];
     window.__snTravelers = [];
+    resetRegistry();
   };
 
   const getSeverityColor = (level) => {
@@ -302,6 +331,155 @@ function Map2D({ alerts, status }) {
       .slice(0, 40);
   };
 
+  /* ── Pembangun ikon marker penyerang (dipakai full-render & real-time) ─────
+     Flag `pop` menambah kelas satu-tembak `atk-pop` yang menjalankan animasi
+     "muncul" — setIcon dengan pop=true akan memutar ulang animasi tsb. */
+  const buildSrcIcon = (alert, count, color, pop) => {
+    const L = window.L;
+    const countBadge = count > 1
+      ? `<span class="atk-count" style="color:${color}">${count}×</span>`
+      : '';
+    return L.divIcon({
+      className: '',
+      html: `<div class="atk-marker${pop ? ' atk-pop' : ''}">
+        <div class="atk-ring" style="border-color:${color}"></div>
+        <div class="atk-core" style="background:${color}">
+          <span class="atk-port">${alert.port || '?'}</span>
+        </div>
+        ${countBadge}
+        <div class="atk-label" style="color:${color}">${(alert.source_city || 'UNKNOWN').toUpperCase()}</div>
+      </div>`,
+      iconSize: [54, 54],
+      iconAnchor: [27, 27],
+    });
+  };
+
+  const srcPopupHtml = (alert, color) => `
+    <div class="cp">
+      <div class="cp-header" style="border-bottom-color:${color}">
+        <span class="sev-badge" style="background:${color}">${getSeverityLabel(alert.rule_level)}</span>
+        <span class="cp-title">ATTACKER ORIGIN</span>
+      </div>
+      <div class="cp-body">
+        <div class="cp-row"><span class="cp-key">IP</span><span class="cp-val">${alert.source_ip}</span></div>
+        <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.source_city}, ${alert.source_country}</span></div>
+        <div class="cp-row"><span class="cp-key">AGENT</span><span class="cp-val">${alert.agent_name || '-'}${alert.agent_id ? ' (#' + alert.agent_id + ')' : ''}</span></div>
+        <div class="cp-divider"></div>
+        <div class="cp-row"><span class="cp-key">TARGET</span><span class="cp-tag">${alert.service}:${alert.port || '?'}</span></div>
+        <div class="cp-row"><span class="cp-key">METHOD</span><span class="cp-val">${alert.rule_description}</span></div>
+        <div class="cp-row"><span class="cp-key">MITRE</span><span class="cp-mitre">${(alert.mitre_technique || []).join(', ') || 'N/A'}</span></div>
+      </div>
+    </div>`;
+
+  // Pastikan marker "SERVER" (tujuan) ada tepat sekali per koordinat tujuan.
+  const ensureDstMarker = (alert) => {
+    const L = window.L;
+    if (!window.__snDstSeen) window.__snDstSeen = new Set();
+    const dkey = `${alert.destination_lat},${alert.destination_lon}`;
+    if (window.__snDstSeen.has(dkey)) return;
+    window.__snDstSeen.add(dkey);
+
+    const dstIcon = L.divIcon({
+      className: '',
+      html: `<div class="srv-marker">
+        <div class="srv-ring"></div>
+        <div class="srv-ring d1"></div>
+        <div class="srv-core"><span class="srv-text">SERVER</span></div>
+        <div class="srv-city">${(alert.destination_city || 'TARGET').toUpperCase()}</div>
+        <div class="srv-ip">${alert.destination_ip}</div>
+      </div>`,
+      iconSize: [80, 80],
+      iconAnchor: [40, 40]
+    });
+
+    const dstMarker = L.marker([alert.destination_lat, alert.destination_lon], { icon: dstIcon })
+      .addTo(window.attackLayers);
+
+    dstMarker.bindPopup(`
+      <div class="cp">
+        <div class="cp-header" style="border-bottom-color:#00ffcc">
+          <span class="sev-badge" style="background:#00ffcc;color:#000">PROTECTED</span>
+          <span class="cp-title">DEFENSE TARGET</span>
+        </div>
+        <div class="cp-body">
+          <div class="cp-row"><span class="cp-key">SERVER IP</span><span class="cp-val">${alert.destination_ip}</span></div>
+          <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.destination_city}, ${alert.destination_country}</span></div>
+        </div>
+      </div>
+    `, { className: 'cp-wrap', maxWidth: 340 });
+
+    dstMarker.on('click', () => setSelectedAlert({
+      source_ip: alert.destination_ip,
+      source_city: alert.destination_city,
+      source_country: alert.destination_country,
+      rule_description: 'Defended target',
+      service: 'SERVER',
+      port: 'ALL',
+      mitre_technique: []
+    }));
+  };
+
+  /* ── Real-time: tambah alert baru TANPA reset peta ─────────────────────────
+     - IP sumber baru  → arc + marker "pop-in" + peluru.
+     - IP sumber lama  → counter naik, marker berkedip (pop ulang) + impact. */
+  const addRealtimeAttacks = (list) => {
+    const L = window.L;
+    if (!L || !window.socMap || !window.attackLayers) return;
+    if (!window.__snBySource) resetRegistry();
+    const reg = window.__snBySource;
+    const gen = window.animationGeneration;
+
+    const geo = (list || []).filter(a =>
+      a.source_lat && a.source_lon && a.destination_lat && a.destination_lon
+    );
+
+    for (const alert of geo) {
+      const color = getSeverityColor(alert.rule_level);
+      const key = alert.source_ip || 'unknown';
+      const existing = reg.get(key);
+
+      if (existing) {
+        // Serangan berulang dari IP yang sama: naikkan counter, mainkan ulang
+        // pop + kirim satu peluru + impact di tujuan (tanda "hit" baru).
+        existing.count += 1;
+        const useColor = alert.rule_level > existing.level ? color : existing.color;
+        existing.color = useColor;
+        existing.level = Math.max(existing.level, alert.rule_level);
+        existing.marker.setIcon(buildSrcIcon(alert, existing.count, useColor, true));
+        existing.marker.off('click').on('click', () => setSelectedAlert(alert));
+        animatePulse(existing.arc, useColor, alert.rule_level >= 9 ? 1500 : 2300, gen, 1);
+        spawnImpact(existing.arc[existing.arc.length - 1], useColor, gen);
+        continue;
+      }
+
+      if (reg.size >= 60) continue; // batasi jumlah marker agar tetap ringan
+
+      const src = [alert.source_lat, alert.source_lon];
+      const dst = [alert.destination_lat, alert.destination_lon];
+      const arc = generateArcPoints(src, dst);
+
+      const line = L.polyline(arc, {
+        color,
+        weight: alert.rule_level >= 9 ? 1.6 : 1.1,
+        opacity: alert.rule_level >= 9 ? 0.62 : 0.5,
+        className: 'arc-line'
+      }).addTo(window.attackLayers);
+
+      const srcMarker = L.marker(src, { icon: buildSrcIcon(alert, 1, color, true) })
+        .addTo(window.attackLayers);
+      srcMarker.bindPopup(srcPopupHtml(alert, color), { className: 'cp-wrap', maxWidth: 340 });
+      srcMarker.on('click', () => setSelectedAlert(alert));
+
+      ensureDstMarker(alert);
+
+      const bulletCount = alert.rule_level >= 9 ? 3 : alert.rule_level >= 7 ? 2 : 2;
+      const speed = alert.rule_level >= 9 ? 1500 : alert.rule_level >= 7 ? 1900 : 2300;
+      animatePulse(arc, color, speed, gen, bulletCount);
+
+      reg.set(key, { marker: srcMarker, arc, line, count: 1, color, level: alert.rule_level });
+    }
+  };
+
   const renderAttacks = (data) => {
     if (!window.L || !window.socMap) return;
 
@@ -310,6 +488,7 @@ function Map2D({ alerts, status }) {
 
     setBlackout(true);
     stopAllAnimations();
+    resetRegistry();
     window.attackLayers?.clearLayers();
 
     if (!data || data.length === 0) {
@@ -332,7 +511,6 @@ function Map2D({ alerts, status }) {
     const geo = clusterAlerts(geoRaw);
 
     const bounds = [];
-    const destSeen = new Set();
     const reveal = []; // arc yang akan di-fade-in oleh SATU loop reveal
 
     geo.forEach((alert, idx) => {
@@ -374,91 +552,18 @@ function Map2D({ alerts, status }) {
                         : alert.rule_level >= 5 ? 2300 : 2900;
       animatePulse(arc, color, speed, gen, bulletCount);
 
-      const countBadge = (alert._count > 1)
-        ? `<span class="atk-count" style="color:${color}">${alert._count}×</span>`
-        : '';
+      const srcMarker = L.marker(src, { icon: buildSrcIcon(alert, alert._count || 1, color, false) })
+        .addTo(window.attackLayers);
 
-      const srcIcon = L.divIcon({
-        className: '',
-        html: `<div class="atk-marker">
-          <div class="atk-ring" style="border-color:${color}"></div>
-          <div class="atk-core" style="background:${color}">
-            <span class="atk-port">${alert.port || '?'}</span>
-          </div>
-          ${countBadge}
-          <div class="atk-label" style="color:${color}">${(alert.source_city || 'UNKNOWN').toUpperCase()}</div>
-        </div>`,
-        iconSize: [54, 54],
-        iconAnchor: [27, 27]
-      });
-
-      const srcMarker = L.marker(src, { icon: srcIcon }).addTo(window.attackLayers);
-
-      srcMarker.bindPopup(`
-        <div class="cp">
-          <div class="cp-header" style="border-bottom-color:${color}">
-            <span class="sev-badge" style="background:${color}">${getSeverityLabel(alert.rule_level)}</span>
-            <span class="cp-title">ATTACKER ORIGIN</span>
-          </div>
-          <div class="cp-body">
-            <div class="cp-row"><span class="cp-key">IP</span><span class="cp-val">${alert.source_ip}</span></div>
-            <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.source_city}, ${alert.source_country}</span></div>
-            <div class="cp-row"><span class="cp-key">EVENTS</span><span class="cp-val" style="color:${color}">${alert._count || 1} alert${alert._count !== 1 ? 's' : ''}</span></div>
-            <div class="cp-divider"></div>
-            <div class="cp-row"><span class="cp-key">TARGET</span><span class="cp-tag">${alert.service}:${alert.port || '?'}</span></div>
-            <div class="cp-row"><span class="cp-key">METHOD</span><span class="cp-val">${alert.rule_description}</span></div>
-            <div class="cp-row"><span class="cp-key">MITRE</span><span class="cp-mitre">${(alert.mitre_technique || []).join(', ') || 'N/A'}</span></div>
-          </div>
-        </div>
-      `, { className: 'cp-wrap', maxWidth: 340 });
-
+      srcMarker.bindPopup(srcPopupHtml(alert, color), { className: 'cp-wrap', maxWidth: 340 });
       srcMarker.on('click', () => setSelectedAlert(alert));
 
-      const dkey = `${alert.destination_lat},${alert.destination_lon}`;
-      if (!destSeen.has(dkey)) {
-        destSeen.add(dkey);
+      // Daftarkan ke registry agar update real-time bisa menemukan marker ini.
+      window.__snBySource.set(alert.source_ip || 'unknown', {
+        marker: srcMarker, arc, line, count: alert._count || 1, color, level: alert.rule_level
+      });
 
-        const dstIcon = L.divIcon({
-          className: '',
-          html: `<div class="srv-marker">
-            <div class="srv-ring"></div>
-            <div class="srv-ring d1"></div>
-            <div class="srv-core"><span class="srv-text">SERVER</span></div>
-            <div class="srv-city">${(alert.destination_city || 'TARGET').toUpperCase()}</div>
-            <div class="srv-ip">${alert.destination_ip}</div>
-          </div>`,
-          iconSize: [80, 80],
-          iconAnchor: [40, 40]
-        });
-
-        const dstMarker = L.marker(dst, { icon: dstIcon }).addTo(window.attackLayers);
-
-        dstMarker.bindPopup(`
-          <div class="cp">
-            <div class="cp-header" style="border-bottom-color:#00ffcc">
-              <span class="sev-badge" style="background:#00ffcc;color:#000">PROTECTED</span>
-              <span class="cp-title">DEFENSE TARGET</span>
-            </div>
-            <div class="cp-body">
-              <div class="cp-row"><span class="cp-key">SERVER IP</span><span class="cp-val">${alert.destination_ip}</span></div>
-              <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.destination_city}, ${alert.destination_country}</span></div>
-              <div class="cp-row"><span class="cp-key">THREATS</span><span class="cp-val">${geoRaw.length}</span></div>
-              <div class="cp-row"><span class="cp-key">CRITICAL</span><span class="cp-val" style="color:#ff2d55">${data.filter(a => a.rule_level >= 9).length}</span></div>
-              <div class="cp-row"><span class="cp-key">HIGH</span><span class="cp-val" style="color:#ff8800">${data.filter(a => a.rule_level >= 7 && a.rule_level < 9).length}</span></div>
-            </div>
-          </div>
-        `, { className: 'cp-wrap', maxWidth: 340 });
-
-        dstMarker.on('click', () => setSelectedAlert({
-          source_ip: alert.destination_ip,
-          source_city: alert.destination_city,
-          source_country: alert.destination_country,
-          rule_description: `Under ${geoRaw.length} active threats`,
-          service: 'SERVER',
-          port: 'ALL',
-          mitre_technique: []
-        }));
-      }
+      ensureDstMarker(alert);
     });
 
     // Reveal arc: SATU loop rAF untuk semua arc (dulu satu loop per arc).

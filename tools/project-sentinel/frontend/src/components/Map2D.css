@@ -394,6 +394,19 @@
 
 @keyframes atkPulse { 0%{transform:scale(0.6);opacity:0.85} 100%{transform:scale(1.8);opacity:0} }
 
+/* Pop-in saat titik serangan BARU muncul secara real-time: skala membesar
+   dengan sedikit overshoot + kilatan terang, sekali jalan. Dipicu ulang tiap
+   kali marker di-setIcon dengan kelas ini (serangan berulang). */
+.atk-marker.atk-pop { animation: atkPop 620ms cubic-bezier(0.22,1.2,0.36,1) 1; }
+@keyframes atkPop {
+  0%   { transform: scale(0);   filter: brightness(2.4); opacity: 0; }
+  55%  { transform: scale(1.35); filter: brightness(1.8); opacity: 1; }
+  100% { transform: scale(1);   filter: brightness(1);   opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atk-marker.atk-pop { animation: none; }
+}
+
 .atk-core {
   position: absolute;
   width: 14px; height: 14px;

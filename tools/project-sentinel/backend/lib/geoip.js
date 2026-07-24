@@ -225,4 +225,16 @@ function getMetrics() {
   return { ...metrics, cacheSize: cache.size };
 }
 
-module.exports = { resolveMany, getMetrics };
+/**
+ * Lokasi override manual untuk satu IP, atau null. Hot-reload via mtime,
+ * sama seperti resolveMany. Dipakai alertsService agar IP privat lab yang
+ * sengaja dipetakan (known-locations.json) tetap tampil di lokasi itu,
+ * alih-alih di-fallback ke titik server.
+ */
+function getOverride(ip) {
+  if (!ip) return null;
+  const ov = loadOverrides();
+  return ov[ip] || null;
+}
+
+module.exports = { resolveMany, getMetrics, getOverride };

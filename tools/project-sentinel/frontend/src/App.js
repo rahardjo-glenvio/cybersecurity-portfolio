@@ -16,12 +16,18 @@ function App() {
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [backendStatus, setBackendStatus] = useState('checking'); // 'checking' | 'online' | 'offline'
-  const [dataSource, setDataSource] = useState('demo');
+  // Pilihan sumber dipertahankan antar-refresh: jika sudah di Real + agent
+  // tertentu, reload halaman tetap di situ (tidak balik ke Demo).
+  const [dataSource, setDataSource] = useState(() => localStorage.getItem('sn_dataSource') || 'demo');
+  const [agents, setAgents] = useState([]);        // sumber terpantau (Local + agent)
+  const [agentScope, setAgentScope] = useState(() => localStorage.getItem('sn_agentScope') || 'all'); // 'all' | agent id
+  const [agentMenuOpen, setAgentMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [jagadOpen, setJagadOpen] = useState(false);
   const [jagadClosing, setJagadClosing] = useState(false);
   const menuRef  = useRef(null);
+  const agentMenuRef = useRef(null);
   const clockRef = useRef(null);
   const closeTimerRef = useRef(null);
   const [tzOpen, setTzOpen] = useState(false);
@@ -55,6 +61,9 @@ function App() {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false);
+      }
+      if (agentMenuRef.current && !agentMenuRef.current.contains(e.target)) {
+        setAgentMenuOpen(false);
       }
       if (clockRef.current && !clockRef.current.contains(e.target)) {
         setTzOpen(false);
@@ -97,7 +106,36 @@ function App() {
     if (isAuthenticated) {
       fetchAlerts();
     }
-  }, [dataSource, isAuthenticated]);
+  }, [dataSource, agentScope, isAuthenticated]);
+
+  // Simpan pilihan sumber agar bertahan saat refresh.
+  useEffect(() => { localStorage.setItem('sn_dataSource', dataSource); }, [dataSource]);
+  useEffect(() => { localStorage.setItem('sn_agentScope', agentScope); }, [agentScope]);
+
+  // Polling real-time: pada mode Real, ambil ulang alerts tiap 5s secara SENYAP
+  // (tanpa spinner / tanpa mengosongkan peta), sehingga serangan baru muncul
+  // sendiri lewat animasi pop-in di peta tanpa perlu refresh manual.
+  useEffect(() => {
+    if (!isAuthenticated || dataSource !== 'real') return;
+    const id = setInterval(() => fetchAlerts(true), 5000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, dataSource, agentScope]);
+
+  // Daftar sumber terpantau (Local + agent Wazuh) untuk dropdown scope.
+  // Hanya relevan di mode Real; demo tidak punya agent.
+  useEffect(() => {
+    if (!isAuthenticated || dataSource !== 'real') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/agents`, { headers: auth.getAuthHeaders() });
+        if (!cancelled) setAgents(res.data.agents || []);
+      } catch (err) {
+        if (!cancelled) setAgents([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isAuthenticated, dataSource]);
 
   // Status backend real-time: polling ringan ke /api/health (publik) tiap 10s.
   // Online = backend menjawab, Offline = tidak terjangkau. Tidak ada status
@@ -126,21 +164,23 @@ function App() {
     setSearchTerm('');
   }, [dataSource]);
 
-  const fetchAlerts = async () => {
-    setIsLoading(true);
+  // silent=true dipakai oleh polling real-time: tidak menyalakan spinner dan
+  // tidak mengosongkan peta bila satu request gagal (agar animasi tak berkedip).
+  const fetchAlerts = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const endpoint = dataSource === 'demo'
         ? `${API_BASE}/api/alerts/demo`
-        : `${API_BASE}/api/alerts`;
+        : `${API_BASE}/api/alerts?agent=${encodeURIComponent(agentScope)}`;
       const response = await axios.get(endpoint, {
         headers: auth.getAuthHeaders()
       });
       setAlerts(response.data.alerts);
     } catch (err) {
       console.error('Error fetching alerts:', err);
-      setAlerts([]);
+      if (!silent) setAlerts([]); // polling gagal: pertahankan data lama
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -185,6 +225,14 @@ function App() {
     setIsAuthenticated(false);
     setAlerts([]);
   };
+
+  // Label ringkas untuk tombol dropdown scope agent.
+  const scopeLabel = useMemo(() => {
+    if (agentScope === 'all') return 'SEMUA SUMBER';
+    const a = agents.find(x => x.id === agentScope);
+    if (!a) return `AGENT ${agentScope}`;
+    return a.local ? `LOCAL · ${a.name}`.toUpperCase() : a.name.toUpperCase();
+  }, [agentScope, agents]);
 
   if (authChecking) {
     return (
@@ -288,6 +336,47 @@ function App() {
             <span>{jagadOpen ? 'CLOSE' : 'JAGAD AI'}</span>
           </button>
 
+          {/* Scope agent: hanya di mode Real (demo tidak punya agent) */}
+          {dataSource === 'real' && (
+            <div className="menu-dropdown" ref={agentMenuRef}>
+              <button
+                className={`menu-trigger ${agentMenuOpen ? 'open' : ''}`}
+                onClick={() => setAgentMenuOpen(prev => !prev)}
+                title="Pilih sumber pemantauan: Local (server) atau agent"
+              >
+                <span className="menu-dot real" />
+                {scopeLabel}
+                <span className="menu-chevron">{agentMenuOpen ? '▲' : '▼'}</span>
+              </button>
+              {agentMenuOpen && (
+                <div className="menu-panel">
+                  <button
+                    className={`menu-item ${agentScope === 'all' ? 'active' : ''}`}
+                    onClick={() => { setAgentScope('all'); setAgentMenuOpen(false); }}
+                  >
+                    <span className="menu-item-dot real" />
+                    Semua Sumber
+                    {agentScope === 'all' && <span className="menu-check">✓</span>}
+                  </button>
+                  <div className="menu-divider" />
+                  {agents.map(a => (
+                    <button
+                      key={a.id}
+                      className={`menu-item ${agentScope === a.id ? 'active' : ''}`}
+                      onClick={() => { setAgentScope(a.id); setAgentMenuOpen(false); }}
+                      title={`Agent ${a.id}${a.ip && a.ip !== 'any' ? ' · ' + a.ip : ''}`}
+                    >
+                      <span className={`menu-item-dot ${a.local ? 'demo' : 'real'}`} />
+                      {a.local ? `Local · ${a.name}` : a.name}
+                      <span className="menu-item-agentid">#{a.id}</span>
+                      {agentScope === a.id && <span className="menu-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="menu-dropdown" ref={menuRef}>
             <button
               className={`menu-trigger ${menuOpen ? 'open' : ''}`}
@@ -334,7 +423,11 @@ function App() {
         </div>
       )}
 
-      <Map2D alerts={filteredAlerts} status={backendStatus} />
+      <Map2D
+        alerts={filteredAlerts}
+        status={backendStatus}
+        sourceKey={`${dataSource}:${agentScope}:${searchTerm.trim()}`}
+      />
       <AlertsTable
         alerts={filteredAlerts}
         allAlerts={alerts}
