@@ -1,13 +1,110 @@
+/* ============================================================================
+   Project SENTINEL — Design Tokens
+   Satu sumber kebenaran untuk warna, spacing, radius, easing, dan shadow.
+   Identitas cyan/teal SOC dipertahankan; token hanya menstandarkan nilainya
+   sehingga komponen konsisten dan mudah dirawat.
+   ============================================================================ */
+:root {
+  /* — Surface & background (deep navy, hindari pure black agar tak "smear") — */
+  --bg-app:        #070b14;
+  --bg-surface:    rgba(6, 14, 28, 0.88);
+  --bg-surface-2:  rgba(0, 8, 22, 0.55);
+  --bg-elevated:   #060e1c;
+
+  /* — Border (satu skala opasitas, bukan belasan nilai acak) — */
+  --border-subtle: rgba(0, 204, 255, 0.10);
+  --border:        rgba(0, 204, 255, 0.20);
+  --border-strong: rgba(0, 204, 255, 0.40);
+
+  /* — Teks: hierarki jelas primary > secondary > muted — */
+  --text-primary:   #e8f4fb;
+  --text-secondary: #9db8cc;
+  --text-muted:     #5a7d94;
+  --text-faint:     #3a5a70;
+
+  /* — Aksen brand — */
+  --accent:      #00ccff;
+  --accent-2:    #00ffcc;
+  --accent-soft: rgba(0, 204, 255, 0.12);
+
+  /* — Severity (dipakai peta + tabel, harus identik) — */
+  --sev-critical: #ff2d55;
+  --sev-high:     #ff8800;
+  --sev-medium:   #ffcc00;
+  --sev-low:      #22d3a6;
+
+  /* — Spacing scale (dense dashboard) — */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* — Radius — */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+
+  /* — Easing & durasi (Expo.out untuk gerakan premium) — */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout:  cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    150ms;
+  --dur:         220ms;
+  --dur-slow:    320ms;
+
+  /* — Elevation — */
+  --shadow-1: 0 2px 12px rgba(0, 0, 0, 0.45);
+  --shadow-2: 0 8px 28px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 16px 48px rgba(0, 0, 0, 0.7);
+
+  /* — Fonts — */
+  --font-ui:   'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-mono: 'Courier New', monospace;
+  --font-display: 'Orbitron', 'Courier New', monospace;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Keyboard focus terlihat jelas untuk aksesibilitas (mouse tidak terpengaruh) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Scrollbar konsisten dengan tema gelap */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 204, 255, 0.25) transparent;
+}
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 204, 255, 0.22);
+  border-radius: 6px;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(0, 204, 255, 0.4); }
+
+/* Hormati preferensi pengguna: matikan animasi non-esensial.
+   Ini juga mematikan pulse peluru peta (ditangani di Map2D via JS). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

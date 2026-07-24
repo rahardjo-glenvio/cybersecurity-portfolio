@@ -1,7 +1,83 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Map2D.css';
 
-function Map2D({ alerts }) {
+/* ── Reduced motion ─────────────────────────────────────────────────────────
+   Pengguna yang menyetel "reduce motion" tidak mendapat peluru beranimasi;
+   arc + marker tetap tampil (informasi utuh, tanpa gerakan yang mengganggu). */
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── Impact ring saat peluru mencapai tujuan ─────────────────────────────── */
+function spawnImpact(latlng, color, gen) {
+  const L = window.L;
+  if (!L || !window.attackLayers) return;
+  if (gen !== undefined && gen !== window.animationGeneration) return;
+
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="impact-ring" style="border-color:${color}"></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  });
+  const m = L.marker(latlng, { icon, interactive: false }).addTo(window.attackLayers);
+  const tid = setTimeout(() => {
+    window.attackLayers?.hasLayer(m) && window.attackLayers.removeLayer(m);
+  }, 1100);
+  window.pulseTimeouts?.push(tid);
+}
+
+/* ── Ticker animasi terpadu ──────────────────────────────────────────────────
+   SATU requestAnimationFrame loop menggerakkan SEMUA peluru. Sebelumnya tiap
+   peluru punya loop sendiri (80-200 rAF simultan) yang membuat animasi berat
+   dan patah-patah. Kini posisi seluruh peluru dihitung dan di-set dalam satu
+   frame, lalu loop berhenti otomatis saat tak ada peluru (hemat CPU). */
+function ensureTicker() {
+  if (window.__snTickerId) return;
+  if (!window.__snTravelers) window.__snTravelers = [];
+
+  const frame = (now) => {
+    const travelers = window.__snTravelers;
+    const gen = window.animationGeneration;
+    const layers = window.attackLayers;
+
+    for (let i = travelers.length - 1; i >= 0; i--) {
+      const tv = travelers[i];
+      if (tv.gen !== gen) {
+        layers && layers.hasLayer(tv.marker) && layers.removeLayer(tv.marker);
+        travelers.splice(i, 1);
+        continue;
+      }
+      const elapsed = now - tv.t0;
+      const cycle = (elapsed / tv.duration) | 0;
+      const p = (elapsed % tv.duration) / tv.duration; // linear, kecepatan konstan
+      const pts = tv.points;
+      const fi = p * (pts.length - 1);
+      const lo = fi | 0;
+      const hi = lo + 1 < pts.length ? lo + 1 : lo;
+      const frac = fi - lo;
+      const lat = pts[lo][0] + (pts[hi][0] - pts[lo][0]) * frac;
+      const lng = pts[lo][1] + (pts[hi][1] - pts[lo][1]) * frac;
+      tv.marker.setLatLng([lat, lng]);
+
+      if (cycle > tv.lastCycle) {
+        tv.lastCycle = cycle;
+        spawnImpact(pts[pts.length - 1], tv.color, tv.gen);
+      }
+    }
+
+    if (travelers.length === 0) {
+      window.__snTickerId = null; // idle: hentikan loop, dihidupkan lagi saat ada peluru
+      return;
+    }
+    window.__snTickerId = requestAnimationFrame(frame);
+  };
+
+  window.__snTickerId = requestAnimationFrame(frame);
+}
+
+function Map2D({ alerts, status }) {
   const mapRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
@@ -42,17 +118,22 @@ function Map2D({ alerts }) {
       }
     };
 
-    if (!window.L) { 
-      init(); 
-    } else { 
-      initMap(); 
-      setMapReady(true); 
+    if (!window.L) {
+      init();
+    } else {
+      initMap();
+      setMapReady(true);
     }
 
-    return () => stopAllAnimations();
+    return () => {
+      stopAllAnimations();
+      if (window.__snTickerId) {
+        cancelAnimationFrame(window.__snTickerId);
+        window.__snTickerId = null;
+      }
+    };
   }, []);
 
-  // BUG FIX: Handle both empty and non-empty alerts
   useEffect(() => {
     if (!mapReady) return;
 
@@ -67,16 +148,17 @@ function Map2D({ alerts }) {
     window.animationGeneration = (window.animationGeneration || 0) + 1;
     (window.pulseTimeouts || []).forEach(id => clearTimeout(id));
     window.pulseTimeouts = [];
+    // Kosongkan daftar peluru: ticker berhenti otomatis pada frame berikutnya.
+    window.__snTravelers = [];
   };
 
-  // NEW: Clear map function
   const clearMap = () => {
     if (!window.attackLayers) return;
-    
+
     setBlackout(true);
     stopAllAnimations();
     window.attackLayers.clearLayers();
-    
+
     if (window.socMap) {
       setTimeout(() => {
         window.socMap.setView([20, 30], 2);
@@ -117,7 +199,7 @@ function Map2D({ alerts }) {
     container.addEventListener('focus', () => container.blur(), { capture: true, passive: true });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      opacity: 0.5,
+      opacity: 0.55,
       maxZoom: 15
     }).addTo(map);
 
@@ -127,13 +209,14 @@ function Map2D({ alerts }) {
     window.attackLayers = L.layerGroup().addTo(map);
     window.animationGeneration = 0;
     window.pulseTimeouts = [];
+    window.__snTravelers = [];
   };
 
   const getSeverityColor = (level) => {
-    if (level >= 9) return '#ff0044';
+    if (level >= 9) return '#ff2d55';
     if (level >= 7) return '#ff8800';
-    if (level >= 5) return '#ffdd00';
-    return '#00ff88';
+    if (level >= 5) return '#ffcc00';
+    return '#22d3a6';
   };
 
   const getSeverityLabel = (level) => {
@@ -143,111 +226,69 @@ function Map2D({ alerts }) {
     return 'LOW';
   };
 
-  const generateArcPoints = (start, end, n = 120) => {
-    const pts = [];
-    const dist = Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2));
-    const h = dist * 0.2;
-    const dx = end[1] - start[1], dy = end[0] - start[0];
-    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  // Easing untuk reveal arc (fade-in halus)
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
+  /* Kurva quadratic bezier: satu control point diangkat tegak lurus dari garis
+     src->dst. Hasilnya benar-benar mulus (bukan pendekatan sinus per-segmen),
+     dan 56 titik cukup karena bezier tidak punya sudut tajam. */
+  const generateArcPoints = (start, end, n = 56) => {
+    const dLat = end[0] - start[0];
+    const dLng = end[1] - start[1];
+    const dist = Math.hypot(dLat, dLng) || 1;
+    const lift = Math.min(dist * 0.18, 26); // tinggi lengkung, dibatasi agar tak liar
+    // vektor tegak lurus (unit) untuk mengangkat titik kontrol
+    const nx = -dLng / dist;
+    const ny = dLat / dist;
+    const cLat = (start[0] + end[0]) / 2 + ny * lift;
+    const cLng = (start[1] + end[1]) / 2 + nx * lift;
+
+    const pts = new Array(n + 1);
     for (let i = 0; i <= n; i++) {
       const t = i / n;
-      const lat = start[0] + (end[0] - start[0]) * t;
-      const lng = start[1] + (end[1] - start[1]) * t;
-      const arc = Math.sin(t * Math.PI) * h;
-      pts.push([lat + (dx / len) * arc * 0.5, lng - (dy / len) * arc * 0.5]);
+      const mt = 1 - t;
+      const a = mt * mt, b = 2 * mt * t, c = t * t;
+      pts[i] = [
+        a * start[0] + b * cLat + c * end[0],
+        a * start[1] + b * cLng + c * end[1],
+      ];
     }
     return pts;
   };
 
-  // Keep for arc fade-in only; pulse uses linear
-  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-  // Spawn N simultaneous pulses on one arc, staggered evenly — no gaps ever
-  const animatePulse = (pathPoints, color, duration, gen, count = 4) => {
+  /* Daftarkan N peluru ke ticker terpadu (tidak lagi memulai rAF per peluru). */
+  const animatePulse = (pathPoints, color, duration, gen, count = 3) => {
     const L = window.L;
-    if (!L) return;
+    if (!L || prefersReducedMotion()) return; // hormati reduce-motion
+    if (!window.__snTravelers) window.__snTravelers = [];
 
     const icon = L.divIcon({
       className: 'pulse-traveler',
-      html: `<div class="tp-wrap">
-        <div class="tp-core" style="background:${color};box-shadow:0 0 6px ${color},0 0 12px ${color}55"></div>
-      </div>`,
+      html: `<div class="tp-wrap"><div class="tp-core" style="background:${color};box-shadow:0 0 6px ${color},0 0 12px ${color}55"></div></div>`,
       iconSize: [10, 10],
-      iconAnchor: [5, 5]
+      iconAnchor: [5, 5],
     });
 
-    // One independent looping traveler, offset by `startOffset` ms
-    const spawnTraveler = (startOffset) => {
-      if (gen !== window.animationGeneration || !window.attackLayers) return;
-
-      const pulse = L.marker(pathPoints[0], { icon, interactive: false });
-      pulse.addTo(window.attackLayers);
-
-      // Subtract startOffset so this traveler begins partway through the path
-      const t0 = performance.now() - startOffset;
-      let lastCycle = -1;
-
-      const loop = () => {
-        if (gen !== window.animationGeneration) {
-          window.attackLayers?.hasLayer(pulse) && window.attackLayers.removeLayer(pulse);
-          return;
-        }
-
-        const elapsed = performance.now() - t0;
-        const cycle   = Math.floor(elapsed / duration);
-
-        // Pure linear progress — constant speed, no slowdown at endpoints
-        const p = (elapsed % duration) / duration;
-
-        const fi   = p * (pathPoints.length - 1);
-        const lo   = fi | 0;                                  // fast Math.floor
-        const hi   = lo + 1 < pathPoints.length ? lo + 1 : lo;
-        const frac = fi - lo;
-        const lat  = pathPoints[lo][0] + (pathPoints[hi][0] - pathPoints[lo][0]) * frac;
-        const lng  = pathPoints[lo][1] + (pathPoints[hi][1] - pathPoints[lo][1]) * frac;
-        pulse.setLatLng([lat, lng]);
-
-        // Impact ring each time the bullet wraps around to destination
-        if (cycle > lastCycle) {
-          lastCycle = cycle;
-          spawnImpact(pathPoints[pathPoints.length - 1], color, gen);
-        }
-
-        requestAnimationFrame(loop);
-      };
-
-      requestAnimationFrame(loop);
-    };
-
-    // Spawn all N travelers immediately, each offset in path progress
+    const now = performance.now();
     for (let i = 0; i < count; i++) {
+      if (gen !== window.animationGeneration || !window.attackLayers) return;
       const startOffset = (duration / count) * i;
-      spawnTraveler(startOffset);
+      const marker = L.marker(pathPoints[0], { icon, interactive: false });
+      marker.addTo(window.attackLayers);
+      window.__snTravelers.push({
+        marker,
+        points: pathPoints,
+        color,
+        duration,
+        gen,
+        t0: now - startOffset, // mulai partway agar peluru tersebar merata di arc
+        lastCycle: -1,
+      });
     }
+    ensureTicker();
   };
 
-  const spawnImpact = (latlng, color, gen) => {
-    const L = window.L;
-    if (!L || !window.attackLayers) return;
-    if (gen !== undefined && gen !== window.animationGeneration) return;
-
-    const icon = L.divIcon({
-      className: '',
-      html: `<div class="impact-ring" style="border-color:${color}"></div>`,
-      iconSize: [30, 30], 
-      iconAnchor: [15, 15]
-    });
-    const m = L.marker(latlng, { icon, interactive: false }).addTo(window.attackLayers);
-    const tid = setTimeout(() => {
-      window.attackLayers?.hasLayer(m) && window.attackLayers.removeLayer(m);
-    }, 1200);
-    window.pulseTimeouts?.push(tid);
-  };
-
-  // ─── Deduplicate + cluster alerts by source IP for perf ────────────────────
   const clusterAlerts = (data) => {
-    // Group by source_ip, keep highest-severity alert per IP
     const byIp = {};
     data.forEach(a => {
       const key = a.source_ip || 'unknown';
@@ -256,7 +297,6 @@ function Map2D({ alerts }) {
       }
       byIp[key]._count = (byIp[key]._count || 0) + 1;
     });
-    // Sort by severity desc, cap at MAX_SOURCES unique origins
     return Object.values(byIp)
       .sort((a, b) => b.rule_level - a.rule_level)
       .slice(0, 40);
@@ -279,7 +319,6 @@ function Map2D({ alerts }) {
 
     const gen = window.animationGeneration;
 
-    // Only keep alerts with valid coords
     const geoRaw = data.filter(a =>
       a.source_lat && a.source_lon &&
       a.destination_lat && a.destination_lon
@@ -290,11 +329,11 @@ function Map2D({ alerts }) {
       return;
     }
 
-    // Cluster: max 40 unique source IPs, best severity per IP
     const geo = clusterAlerts(geoRaw);
 
     const bounds = [];
     const destSeen = new Set();
+    const reveal = []; // arc yang akan di-fade-in oleh SATU loop reveal
 
     geo.forEach((alert, idx) => {
       const color = getSeverityColor(alert.rule_level);
@@ -306,23 +345,12 @@ function Map2D({ alerts }) {
 
       const line = L.polyline(arc, {
         color,
-        weight: alert.rule_level >= 9 ? 1.5 : 1,
+        weight: alert.rule_level >= 9 ? 1.6 : 1.1,
         opacity: 0,
         className: 'arc-line'
       }).addTo(window.attackLayers);
 
-      const tid = setTimeout(() => {
-        if (gen !== window.animationGeneration) return;
-        const dur = 600, t0 = performance.now();
-        const fade = () => {
-          if (gen !== window.animationGeneration) return;
-          const p = easeOutCubic(Math.min((performance.now() - t0) / dur, 1));
-          line.setStyle({ opacity: p * 0.55 });
-          if (p < 1) requestAnimationFrame(fade);
-        };
-        requestAnimationFrame(fade);
-      }, idx * 80);
-      window.pulseTimeouts?.push(tid);
+      reveal.push({ line, target: alert.rule_level >= 9 ? 0.62 : 0.5, delay: idx * 32 });
 
       line.bindPopup(`
         <div class="cp mini">
@@ -336,13 +364,14 @@ function Map2D({ alerts }) {
         </div>
       `, { className: 'cp-wrap' });
 
-      // Bullet count + speed by severity: critical = 5 fast, high = 4, med = 3, low = 2
-      const bulletCount = alert.rule_level >= 9 ? 5
-                        : alert.rule_level >= 7 ? 4
-                        : alert.rule_level >= 5 ? 3 : 2;
-      const speed       = alert.rule_level >= 9 ? 1400
-                        : alert.rule_level >= 7 ? 1800
-                        : alert.rule_level >= 5 ? 2200 : 2800;
+      // Jumlah peluru per arc berdasarkan severity (dikurangi dari 2-5 ke 1-3
+      // agar ringan di perangkat menengah tanpa kehilangan makna visual).
+      const bulletCount = alert.rule_level >= 9 ? 3
+                        : alert.rule_level >= 7 ? 2
+                        : alert.rule_level >= 5 ? 2 : 1;
+      const speed       = alert.rule_level >= 9 ? 1500
+                        : alert.rule_level >= 7 ? 1900
+                        : alert.rule_level >= 5 ? 2300 : 2900;
       animatePulse(arc, color, speed, gen, bulletCount);
 
       const countBadge = (alert._count > 1)
@@ -414,7 +443,7 @@ function Map2D({ alerts }) {
               <div class="cp-row"><span class="cp-key">SERVER IP</span><span class="cp-val">${alert.destination_ip}</span></div>
               <div class="cp-row"><span class="cp-key">LOCATION</span><span class="cp-val">${alert.destination_city}, ${alert.destination_country}</span></div>
               <div class="cp-row"><span class="cp-key">THREATS</span><span class="cp-val">${geoRaw.length}</span></div>
-              <div class="cp-row"><span class="cp-key">CRITICAL</span><span class="cp-val" style="color:#ff0044">${data.filter(a => a.rule_level >= 9).length}</span></div>
+              <div class="cp-row"><span class="cp-key">CRITICAL</span><span class="cp-val" style="color:#ff2d55">${data.filter(a => a.rule_level >= 9).length}</span></div>
               <div class="cp-row"><span class="cp-key">HIGH</span><span class="cp-val" style="color:#ff8800">${data.filter(a => a.rule_level >= 7 && a.rule_level < 9).length}</span></div>
             </div>
           </div>
@@ -432,6 +461,26 @@ function Map2D({ alerts }) {
       }
     });
 
+    // Reveal arc: SATU loop rAF untuk semua arc (dulu satu loop per arc).
+    if (!prefersReducedMotion() && reveal.length) {
+      const revealStart = performance.now();
+      const revealDur = 520;
+      const doReveal = () => {
+        if (gen !== window.animationGeneration) return;
+        const t = performance.now() - revealStart;
+        let done = true;
+        for (const a of reveal) {
+          const local = Math.min(Math.max((t - a.delay) / revealDur, 0), 1);
+          a.line.setStyle({ opacity: easeOutCubic(local) * a.target });
+          if (local < 1) done = false;
+        }
+        if (!done) requestAnimationFrame(doReveal);
+      };
+      requestAnimationFrame(doReveal);
+    } else {
+      reveal.forEach(a => a.line.setStyle({ opacity: a.target }));
+    }
+
     if (bounds.length > 0) {
       setTimeout(() => {
         if (gen !== window.animationGeneration) return;
@@ -448,85 +497,88 @@ function Map2D({ alerts }) {
   const criticalCount = safeAlerts.filter(a => a.rule_level >= 9).length;
   const highCount = safeAlerts.filter(a => a.rule_level >= 7 && a.rule_level < 9).length;
   const mediumCount = safeAlerts.filter(a => a.rule_level >= 5 && a.rule_level < 7).length;
-  // Unique source IPs (what's actually rendered on map)
   const uniqueSources = new Set(geoAlerts.map(a => a.source_ip)).size;
 
   return (
     <div className="map-wrap">
       <div className={`map-blackout ${blackout ? 'active' : ''}`} />
 
-      <div className="scanline-overlay" />
-      <div className="scan-beam" />
       <div className="map-vignette" />
 
       <div className="hud-tl">
         <div className="hud-header-inner">
           <div className="hud-live-dot" />
-          <div className="hud-title">WAZUH THREAT MONITOR</div>
+          <div className="hud-title">THREAT MONITOR</div>
         </div>
-        <div className="hud-sub">▸ REAL-TIME ATTACK VISUALIZATION</div>
+        <div className="hud-sub">Real-time attack map</div>
       </div>
 
       <div className="hud-tr">
         <div className="hud-box">
           <span className="hud-num">{geoAlerts.length}</span>
-          <span className="hud-lbl">{uniqueSources > 0 ? `${uniqueSources} SRC` : 'THREATS'}</span>
+          <span className="hud-lbl">{uniqueSources > 0 ? `${uniqueSources} sources` : 'threats'}</span>
         </div>
         <div className="hud-box crit">
           <span className="hud-num">{criticalCount}</span>
-          <span className="hud-lbl">CRITICAL</span>
+          <span className="hud-lbl">critical</span>
         </div>
         <div className="hud-box high">
           <span className="hud-num">{highCount}</span>
-          <span className="hud-lbl">HIGH</span>
+          <span className="hud-lbl">high</span>
         </div>
         <div className="hud-box med">
           <span className="hud-num">{mediumCount}</span>
-          <span className="hud-lbl">MEDIUM</span>
+          <span className="hud-lbl">medium</span>
         </div>
       </div>
 
       <div className="hud-bl">
-        <button 
-          className="hud-btn" 
+        <button
+          className="hud-btn"
           onClick={() => smoothTransition(() => window.socMap?.setView([20, 30], 2))}
         >
-          GLOBAL VIEW
+          Global
         </button>
-        <button 
-          className="hud-btn" 
+        <button
+          className="hud-btn"
           onClick={() => {
             if (!window.socMap || !safeAlerts.length) return;
             const pts = safeAlerts
               .filter(a => a.source_lat && a.destination_lat)
               .flatMap(a => [
-                [a.source_lat, a.source_lon], 
+                [a.source_lat, a.source_lon],
                 [a.destination_lat, a.destination_lon]
               ]);
             if (pts.length) {
-              smoothTransition(() => 
-                window.socMap.fitBounds(pts, { 
-                  padding: [80, 80], 
-                  maxZoom: 11, 
-                  animate: false 
+              smoothTransition(() =>
+                window.socMap.fitBounds(pts, {
+                  padding: [80, 80],
+                  maxZoom: 11,
+                  animate: false
                 })
               );
             }
           }}
         >
-          FIT ATTACKS
+          Fit attacks
         </button>
-        <button 
-          className="hud-btn" 
+        <button
+          className="hud-btn"
           onClick={() => smoothTransition(() => window.socMap?.setView([-7.4, 109.2], 11))}
         >
-          ZOOM TARGET
+          Zoom target
         </button>
       </div>
 
       {safeAlerts.length === 0 && mapReady && (
         <div className="map-empty-state">
-          <div className="empty-icon">⚠</div>
+          <svg className="empty-icon" viewBox="0 0 24 24" width="52" height="52" fill="none"
+               stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+               aria-hidden="true">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
           <div className="empty-title">NO THREATS DETECTED</div>
           <div className="empty-subtitle">System is monitoring for suspicious activity</div>
         </div>
@@ -535,8 +587,8 @@ function Map2D({ alerts }) {
       {selectedAlert && (
         <div className="detail-panel">
           <div className="dp-header">
-            <span>▸ THREAT DETAIL</span>
-            <button onClick={() => setSelectedAlert(null)}>✕</button>
+            <span>Threat detail</span>
+            <button onClick={() => setSelectedAlert(null)} aria-label="Tutup detail">✕</button>
           </div>
           {[
             ['FROM', `${selectedAlert.source_city}, ${selectedAlert.source_country}`],
@@ -555,22 +607,20 @@ function Map2D({ alerts }) {
 
       <div className="map-status-bar">
         <div className="status-item">
-          <div className="status-dot-sm" />
-          <span className="status-online">SYSTEM ONLINE</span>
-        </div>
-        <div className="status-item">SENTINEL v2.0</div>
-        <div className="status-item">WAZUH IDS INTEGRATION</div>
-        <div className="status-item">ENGINE: ACTIVE</div>
-        <div className="status-scrolling">
-          <span className="status-ticker">
-            ████ MONITORING ALL NETWORK INTERFACES &nbsp;|&nbsp; THREAT INTELLIGENCE FEED: ACTIVE &nbsp;|&nbsp; MITRE ATT&CK FRAMEWORK: ENABLED &nbsp;|&nbsp; GEO-IP RESOLUTION: RUNNING &nbsp;|&nbsp; ANOMALY DETECTION: ONLINE &nbsp;|&nbsp; TLS INSPECTION: ENABLED &nbsp;████
+          <div className={`status-dot-sm ${status === 'offline' ? 'off' : ''}`} />
+          <span className={`status-online ${status === 'offline' ? 'off' : ''}`}>
+            {status === 'online' ? 'SYSTEM ONLINE' : status === 'offline' ? 'BACKEND OFFLINE' : 'CHECKING…'}
           </span>
         </div>
+        <div className="status-spacer" />
+        <div className="status-item dim">WAZUH IDS</div>
+        <div className="status-item dim">MITRE ATT&CK</div>
+        <div className="status-item dim">SENTINEL v2.0</div>
       </div>
 
       <div ref={mapRef} className="map-canvas" />
       {!mapReady && (
-        <div className="map-loading">▸ INITIALIZING THREAT MAP...</div>
+        <div className="map-loading">Initializing threat map…</div>
       )}
     </div>
   );

@@ -1,0 +1,4 @@
+{
+  "_comment": "Override lokasi manual untuk IP yang GeoIP-nya meleset (mis. Starlink/CGNAT). Salin ke known-locations.json lalu isi IP asli Anda. File asli TIDAK di-commit (privasi).",
+  "203.0.113.10": { "city": "Kota Anda", "country": "Indonesia", "lat": -7.4256, "lon": 109.2297 }
+}

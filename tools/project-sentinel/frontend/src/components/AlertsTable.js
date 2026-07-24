@@ -34,12 +34,34 @@ const PRESET_WORDLIST = [
   { label: 'web application attack', category: 'Rule' },
 ];
 
-function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
+// Ikon kecil (SVG, bukan emoji) agar konsisten lintas OS
+const IconSearch = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+const IconSort = ({ dir }) => (
+  <svg className={`sort-ico ${dir || ''}`} viewBox="0 0 24 24" width="11" height="11"
+       fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"
+       strokeLinejoin="round" aria-hidden="true">
+    {dir === 'asc'
+      ? <polyline points="18 15 12 9 6 15" />
+      : dir === 'desc'
+        ? <polyline points="6 9 12 15 18 9" />
+        : <><polyline points="8 9 12 5 16 9" opacity="0.9" /><polyline points="8 15 12 19 16 15" opacity="0.9" /></>}
+  </svg>
+);
+
+function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch, loading }) {
   const [inputValue, setInputValue] = useState(searchTerm || '');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: null, dir: 'asc' });
   const inputRef = useRef(null);
   const suggestRef = useRef(null);
+  const detailRef = useRef(null);
 
   // Sync inputValue dengan searchTerm dari parent
   useEffect(() => {
@@ -58,6 +80,24 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
     return () => document.removeEventListener('mousedown', handle);
   }, []);
 
+  // Smooth scroll + focus ke panel detail saat sebuah log dipilih
+  useEffect(() => {
+    if (!selectedLog || !detailRef.current) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const id = requestAnimationFrame(() => {
+      detailRef.current?.scrollIntoView({
+        behavior: reduce ? 'auto' : 'smooth',
+        block: 'center',
+      });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [selectedLog]);
+
+  // Kalau daftar alert berubah (mis. ganti data source), tutup detail yang stale
+  useEffect(() => {
+    setSelectedLog(prev => (prev && alerts.some(a => a.id === prev.id) ? prev : null));
+  }, [alerts]);
+
   // Bangun suggestions dari data aktual + wordlist
   const suggestions = useMemo(() => {
     const term = inputValue.toLowerCase().trim();
@@ -66,7 +106,6 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
     const seen = new Set();
     const results = [];
 
-    // Dari wordlist preset
     PRESET_WORDLIST.forEach(({ label, category }) => {
       if (label.toLowerCase().includes(term) && !seen.has(label.toLowerCase())) {
         seen.add(label.toLowerCase());
@@ -74,7 +113,6 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
       }
     });
 
-    // Dari data alert aktual (allAlerts untuk dapat semua, bukan yang sudah difilter)
     const source = allAlerts || alerts || [];
     source.forEach(a => {
       const candidates = [
@@ -140,16 +178,29 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
     }
   };
 
+  // Severity dipetakan ke token warna yang sama dengan peta (konsistensi)
   const getSeverityColor = (level) => {
-    if (level >= 9) return '#ff0044';
+    if (level >= 9) return '#ff2d55';
     if (level >= 7) return '#ff8800';
-    if (level >= 5) return '#ffdd00';
-    return '#00ff88';
+    if (level >= 5) return '#ffcc00';
+    return '#22d3a6';
+  };
+  const getSeverityLabel = (level) => {
+    if (level >= 9) return 'CRITICAL';
+    if (level >= 7) return 'HIGH';
+    if (level >= 5) return 'MEDIUM';
+    return 'LOW';
+  };
+  const getSeverityTier = (level) => {
+    if (level >= 9) return 'critical';
+    if (level >= 7) return 'high';
+    if (level >= 5) return 'medium';
+    return 'low';
   };
 
   const getCategoryColor = (cat) => {
     const map = {
-      Service: '#00ccff', Attack: '#ff4477', Level: '#ffdd00',
+      Service: '#00ccff', Attack: '#ff4477', Level: '#ffcc00',
       Rule: '#00ffcc', Country: '#aa88ff', City: '#88ccff',
       IP: '#ff9944', MITRE: '#ff66aa', preset: '#5588aa',
     };
@@ -177,21 +228,67 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
     );
   };
 
+  // ── Sorting lokal (hanya urutan tampilan, tidak mengubah data) ─────────────
+  const requestSort = (key) => {
+    setSortConfig(prev =>
+      prev.key === key
+        ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { key, dir: 'asc' }
+    );
+  };
+
+  const sortedAlerts = useMemo(() => {
+    if (!sortConfig.key) return alerts;
+    const val = (a) => {
+      switch (sortConfig.key) {
+        case 'time': return new Date(a.timestamp).getTime() || 0;
+        case 'ip': return a.source_ip || '';
+        case 'country': return a.source_country || '';
+        case 'service': return a.service || '';
+        case 'level': return a.rule_level || 0;
+        default: return '';
+      }
+    };
+    const dir = sortConfig.dir === 'asc' ? 1 : -1;
+    return [...alerts].sort((a, b) => {
+      const va = val(a), vb = val(b);
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+      return String(va).localeCompare(String(vb)) * dir;
+    });
+  }, [alerts, sortConfig]);
+
   const totalAlerts = alerts.length;
   const criticalCount = alerts.filter(a => a.rule_level >= 9).length;
   const highCount = alerts.filter(a => a.rule_level >= 7 && a.rule_level < 9).length;
   const countryCount = new Set(alerts.map(a => a.source_country).filter(Boolean)).size;
   const isFiltered = searchTerm && searchTerm.trim().length > 0;
 
+  const COLUMNS = [
+    { key: 'time', label: 'Time', sortable: true },
+    { key: 'ip', label: 'Source IP', sortable: true },
+    { key: 'city', label: 'City', sortable: false },
+    { key: 'country', label: 'Country', sortable: true },
+    { key: 'service', label: 'Service', sortable: true },
+    { key: 'desc', label: 'Rule Description', sortable: false },
+    { key: 'level', label: 'Level', sortable: true },
+    { key: 'mitre', label: 'MITRE ATT&CK', sortable: false },
+  ];
+
   return (
     <div className="alerts-container">
       <div className="alerts-header-row">
-        <h1>Wazuh Security Alerts</h1>
+        <div className="alerts-title-group">
+          <span className="alerts-title-mark" />
+          <div className="alerts-title-text">
+            <h1>Security Alerts</h1>
+            <span className="alerts-title-sub">Wazuh IDS event stream</span>
+          </div>
+        </div>
 
         {/* Search Bar */}
         <div className="search-wrapper">
           <div className={`search-box ${inputValue ? 'has-value' : ''}`}>
-            <span className="search-icon">⌕</span>
+            <span className="search-icon"><IconSearch /></span>
             <input
               ref={inputRef}
               type="text"
@@ -205,7 +302,7 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
               spellCheck="false"
             />
             {inputValue && (
-              <button className="search-clear" onClick={handleClear} title="Hapus">✕</button>
+              <button className="search-clear" onClick={handleClear} title="Hapus" aria-label="Hapus pencarian">✕</button>
             )}
           </div>
 
@@ -257,7 +354,7 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
       <div className="stats">
         <div className="stat-box">
           <div className="stat-number">
-            {isFiltered ? <><span style={{ color: '#00ffcc' }}>{totalAlerts}</span><span style={{ color: '#3a6a80', fontSize: 12 }}> / {(allAlerts || []).length}</span></> : totalAlerts}
+            {isFiltered ? <><span style={{ color: '#00ffcc' }}>{totalAlerts}</span><span className="stat-number-sub"> / {(allAlerts || []).length}</span></> : totalAlerts}
           </div>
           <div className="stat-label">{isFiltered ? 'Hasil Filter' : 'Total Alerts'}</div>
         </div>
@@ -288,54 +385,131 @@ function AlertsTable({ alerts, allAlerts, dataSource, searchTerm, onSearch }) {
       <table className="alerts-table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Source IP</th>
-            <th>City</th>
-            <th>Country</th>
-            <th>Service</th>
-            <th>Rule Description</th>
-            <th>Level</th>
-            <th>MITRE ATT&CK</th>
+            {COLUMNS.map(col => {
+              const active = sortConfig.key === col.key;
+              return (
+                <th
+                  key={col.key}
+                  className={`${col.sortable ? 'sortable' : ''} ${active ? 'sorted' : ''} col-${col.key}`}
+                  onClick={col.sortable ? () => requestSort(col.key) : undefined}
+                  aria-sort={active ? (sortConfig.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+                >
+                  <span className="th-inner">
+                    {col.label}
+                    {col.sortable && <IconSort dir={active ? sortConfig.dir : null} />}
+                  </span>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
-          {alerts.length === 0 ? (
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <tr className="skeleton-row" key={`sk-${i}`}>
+                {COLUMNS.map(c => (
+                  <td key={c.key}><span className="skeleton-bar" /></td>
+                ))}
+              </tr>
+            ))
+          ) : sortedAlerts.length === 0 ? (
             <tr>
-              <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#5a8aa0' }}>
-                {isFiltered ? `Tidak ada hasil untuk "${searchTerm}"` : 'Tidak ada alert'}
+              <td colSpan={8}>
+                <div className="table-empty">
+                  <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor"
+                       strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <span className="table-empty-title">
+                    {isFiltered ? `Tidak ada hasil untuk "${searchTerm}"` : 'Tidak ada alert'}
+                  </span>
+                  <span className="table-empty-sub">
+                    {isFiltered ? 'Coba kata kunci lain atau hapus filter' : 'Sistem sedang memantau aktivitas'}
+                  </span>
+                </div>
               </td>
             </tr>
           ) : (
-            alerts.map(alert => (
-              <tr key={alert.id}>
-                <td className="timestamp">{formatTimestamp(alert.timestamp)}</td>
-                <td className="ip">{highlightMatch(alert.source_ip, searchTerm)}</td>
-                <td className="city">{highlightMatch(alert.source_city || '-', searchTerm)}</td>
-                <td className="country">{highlightMatch(alert.source_country || 'Unknown', searchTerm)}</td>
-                <td className="service">
-                  {alert.service ? (
-                    <span className="service-badge">
-                      {highlightMatch(alert.service, searchTerm)} :{alert.port}
+            sortedAlerts.map(alert => {
+              const tier = getSeverityTier(alert.rule_level);
+              const isSel = selectedLog && selectedLog.id === alert.id;
+              return (
+                <tr
+                  key={alert.id}
+                  className={`log-row sev-${tier} ${isSel ? 'selected' : ''}`}
+                  onClick={() => setSelectedLog(alert)}
+                >
+                  <td className="timestamp">{formatTimestamp(alert.timestamp)}</td>
+                  <td className="ip">{highlightMatch(alert.source_ip, searchTerm)}</td>
+                  <td className="city">{highlightMatch(alert.source_city || '-', searchTerm)}</td>
+                  <td className="country">{highlightMatch(alert.source_country || 'Unknown', searchTerm)}</td>
+                  <td className="service">
+                    {alert.service ? (
+                      <span className="service-badge">
+                        {highlightMatch(alert.service, searchTerm)}<span className="svc-port">:{alert.port}</span>
+                      </span>
+                    ) : '-'}
+                  </td>
+                  <td className="description">{highlightMatch(alert.rule_description, searchTerm)}</td>
+                  <td className="level">
+                    <span className={`severity-badge sev-${tier}`}>
+                      <span className="sev-dot" />
+                      {alert.rule_level}
                     </span>
-                  ) : '-'}
-                </td>
-                <td className="description">{highlightMatch(alert.rule_description, searchTerm)}</td>
-                <td className="level">
-                  <span className="severity-badge" style={{ backgroundColor: getSeverityColor(alert.rule_level) }}>
-                    {alert.rule_level}
-                  </span>
-                </td>
-                <td className="mitre">
-                  {alert.mitre_technique && alert.mitre_technique.length > 0
-                    ? highlightMatch(alert.mitre_technique.join(', '), searchTerm)
-                    : '-'}
-                </td>
-              </tr>
-            ))
+                  </td>
+                  <td className="mitre">
+                    {alert.mitre_technique && alert.mitre_technique.length > 0
+                      ? highlightMatch(alert.mitre_technique.join(', '), searchTerm)
+                      : '-'}
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
       </div>
+
+      {/* ── Panel detail log: muncul saat sebuah baris diklik ─────────────── */}
+      {selectedLog && (
+        <div
+          ref={detailRef}
+          className={`log-detail sev-${getSeverityTier(selectedLog.rule_level)}`}
+          style={{ '--sev': getSeverityColor(selectedLog.rule_level) }}
+        >
+          <div className="log-detail-glow" />
+          <div className="ld-header">
+            <div className="ld-header-left">
+              <span className="ld-sev-badge">{getSeverityLabel(selectedLog.rule_level)}</span>
+              <div className="ld-title-block">
+                <span className="ld-title">Log Detail</span>
+                <span className="ld-title-sub">Rule level {selectedLog.rule_level}</span>
+              </div>
+            </div>
+            <button className="ld-close" onClick={() => setSelectedLog(null)} aria-label="Tutup detail">✕</button>
+          </div>
+
+          <div className="ld-body">
+            {[
+              ['Waktu', formatTimestamp(selectedLog.timestamp)],
+              ['Source IP', selectedLog.source_ip],
+              ['Lokasi', `${selectedLog.source_city || '-'}, ${selectedLog.source_country || 'Unknown'}`],
+              ['Service', selectedLog.service ? `${selectedLog.service}:${selectedLog.port || '?'}` : '-'],
+              ['Destination', selectedLog.destination_ip || '-'],
+              ['MITRE ATT&CK', (selectedLog.mitre_technique || []).join(', ') || 'N/A'],
+            ].map(([k, v]) => (
+              <div className="ld-field" key={k}>
+                <span className="ld-key">{k}</span>
+                <span className="ld-val">{v}</span>
+              </div>
+            ))}
+            <div className="ld-field ld-field-wide">
+              <span className="ld-key">Rule Description</span>
+              <span className="ld-val ld-desc">{selectedLog.rule_description}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

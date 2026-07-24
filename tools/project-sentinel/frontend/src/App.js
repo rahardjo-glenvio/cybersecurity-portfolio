@@ -14,6 +14,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [alerts, setAlerts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('checking'); // 'checking' | 'online' | 'offline'
   const [dataSource, setDataSource] = useState('demo');
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -97,12 +99,35 @@ function App() {
     }
   }, [dataSource, isAuthenticated]);
 
+  // Status backend real-time: polling ringan ke /api/health (publik) tiap 10s.
+  // Online = backend menjawab, Offline = tidak terjangkau. Tidak ada status
+  // statis/simulasi; indikator sepenuhnya mengikuti kondisi service.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    const ping = async () => {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+        const res = await fetch(`${API_BASE}/api/health`, { signal: ctrl.signal, cache: 'no-store' });
+        clearTimeout(timer);
+        if (!cancelled) setBackendStatus(res.ok ? 'online' : 'offline');
+      } catch {
+        if (!cancelled) setBackendStatus('offline');
+      }
+    };
+    ping();
+    const id = setInterval(ping, 10000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isAuthenticated]);
+
   // Reset search saat ganti data source
   useEffect(() => {
     setSearchTerm('');
   }, [dataSource]);
 
   const fetchAlerts = async () => {
+    setIsLoading(true);
     try {
       const endpoint = dataSource === 'demo'
         ? `${API_BASE}/api/alerts/demo`
@@ -114,6 +139,8 @@ function App() {
     } catch (err) {
       console.error('Error fetching alerts:', err);
       setAlerts([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,12 +224,14 @@ function App() {
 
         {/* ── Center: status minimal ── */}
         <div className="hdr-center">
-          <span className="hdr-live-pill">
+          <span className={`hdr-live-pill ${backendStatus}`} title="Status koneksi ke backend (real-time)">
             <span className="hdr-live-dot" />
-            LIVE
+            {backendStatus === 'online' ? 'LIVE' : backendStatus === 'offline' ? 'OFFLINE' : 'CHECKING'}
           </span>
           <span className="hdr-center-sep" />
-          <span className="hdr-center-item">WAZUH IDS ACTIVE</span>
+          <span className="hdr-center-item">
+            {backendStatus === 'offline' ? 'BACKEND UNREACHABLE' : 'WAZUH IDS ACTIVE'}
+          </span>
           <span className="hdr-center-sep" />
           <span className="hdr-center-item dim">{TZ_NAMES[clockTz]}</span>
         </div>
@@ -250,7 +279,12 @@ function App() {
             onClick={() => jagadOpen ? handleCloseJagad() : handleOpenJagad()}
             title={jagadOpen ? 'Close JAGAD AI' : 'Open JAGAD AI Analyzer'}
           >
-            <span className="jagad-trigger-eye">👁</span>
+            <svg className="jagad-trigger-eye" viewBox="0 0 24 24" width="15" height="15"
+                 fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                 strokeLinejoin="round" aria-hidden="true">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
             <span>{jagadOpen ? 'CLOSE' : 'JAGAD AI'}</span>
           </button>
 
@@ -293,13 +327,21 @@ function App() {
 
       </div>
 
-      <Map2D alerts={filteredAlerts} />
+      {backendStatus === 'offline' && (
+        <div className="offline-banner" role="alert">
+          <span className="offline-banner-dot" />
+          <span>Koneksi ke backend terputus. Status <strong>OFFLINE</strong>. Data yang tampil mungkin tidak terbaru.</span>
+        </div>
+      )}
+
+      <Map2D alerts={filteredAlerts} status={backendStatus} />
       <AlertsTable
         alerts={filteredAlerts}
         allAlerts={alerts}
         dataSource={dataSource}
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
+        loading={isLoading}
       />
 
       {jagadOpen && (

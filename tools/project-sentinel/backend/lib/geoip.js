@@ -76,6 +76,42 @@ function scheduleSave() {
   if (saveTimer.unref) saveTimer.unref();
 }
 
+// ── Manual location overrides ───────────────────────────────────────────────
+// Sebagian IP tergeolokasi buruk oleh GeoIP (mis. Starlink/CGNAT yang egress-nya
+// jauh dari lokasi fisik: dish di Purwokerto tapi IP keluar via gateway Jakarta).
+// File known-locations.json memungkinkan operator menyematkan lokasi sebenarnya
+// untuk IP tertentu. File bersifat opsional dan di-hot-reload saat berubah.
+const OVERRIDE_FILE = path.join(__dirname, '..', 'known-locations.json');
+let overrides = {};
+let overridesMtime = -1;
+
+function loadOverrides() {
+  try {
+    const stat = fs.statSync(OVERRIDE_FILE);
+    if (stat.mtimeMs !== overridesMtime) {
+      const raw = JSON.parse(fs.readFileSync(OVERRIDE_FILE, 'utf8'));
+      const clean = {};
+      for (const [ip, g] of Object.entries(raw)) {
+        if (g && typeof g.lat === 'number' && typeof g.lon === 'number') {
+          clean[ip] = {
+            country: g.country || 'Unknown',
+            city: g.city || 'Unknown',
+            lat: g.lat,
+            lon: g.lon
+          };
+        }
+      }
+      overrides = clean;
+      overridesMtime = stat.mtimeMs;
+      console.log(`[geoip] loaded ${Object.keys(overrides).length} manual location override(s)`);
+    }
+  } catch {
+    // File tidak ada atau tidak valid: pertahankan yang lama (default: kosong).
+    if (overridesMtime === -1) overrides = {};
+  }
+  return overrides;
+}
+
 /**
  * Resolves many IPs at once: deduplicates, serves what it can from cache, and
  * batches the rest. Never throws - unresolved IPs come back as null so callers
@@ -86,6 +122,7 @@ function scheduleSave() {
  */
 async function resolveMany(ips) {
   loadCache();
+  const ov = loadOverrides();
   const started = process.hrtime.bigint();
 
   const unique = [...new Set(ips.filter(Boolean))];
@@ -94,6 +131,8 @@ async function resolveMany(ips) {
   const now = Date.now();
 
   for (const ip of unique) {
+    // Override manual menang atas cache maupun GeoIP.
+    if (ov[ip]) { locations.set(ip, ov[ip]); metrics.hits++; continue; }
     const entry = cache.get(ip);
     if (entry && entry.expires > now) {
       locations.set(ip, entry.geo);

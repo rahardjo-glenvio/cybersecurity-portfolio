@@ -9,6 +9,12 @@ const { createAlertsService } = require('./lib/alertsService');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Behind nginx every request arrives from 127.0.0.1, so req.ip would be the
+// proxy for everyone and the login rate limiter would lock out all clients at
+// once instead of the one guessing passwords. Trusting only loopback keeps
+// X-Forwarded-For usable without letting a direct caller spoof its own IP.
+app.set('trust proxy', 'loopback');
+
 // Detect local IP
 const getLocalIP = () => {
   const interfaces = os.networkInterfaces();
@@ -64,6 +70,15 @@ app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)) }));
 app.use(express.json());
 const { router: authRouter, authenticateToken } = require("./auth");
 app.use("/api/auth", authRouter);
+
+// Health probe publik & ringan untuk indikator status live di dashboard.
+// Sengaja TANPA auth supaya frontend bisa polling murni untuk tahu "backend
+// terjangkau atau tidak", bukan untuk data sensitif. no-store agar tak di-cache.
+const STARTED_AT = Date.now();
+app.get('/api/health', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ status: 'ok', uptime_s: Math.floor((Date.now() - STARTED_AT) / 1000), ts: Date.now() });
+});
 
 const TARGET = {
   lat: parseFloat(process.env.SERVER_LAT || -7.4333),
@@ -205,6 +220,11 @@ app.get('/api/alerts/demo', authenticateToken, (req, res) => {
   res.json({ success: true, count: alerts.length, alerts });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+// Behind a reverse proxy there is no reason to accept connections from
+// anywhere but loopback, so BIND_HOST can shut the door without relying on the
+// firewall alone. Defaults to 0.0.0.0 to keep the homelab LAN setup working.
+const BIND_HOST = process.env.BIND_HOST || '0.0.0.0';
+
+app.listen(PORT, BIND_HOST, () => {
+  console.log(`Backend running on http://${BIND_HOST}:${PORT}`);
 });

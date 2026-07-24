@@ -33,3 +33,6 @@ Thumbs.db
 .claude/
 .vscode/
 .idea/
+
+# ===== PRIVACY (IP + lokasi nyata, jangan publik) =====
+known-locations.json

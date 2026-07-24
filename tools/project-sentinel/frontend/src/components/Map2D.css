@@ -8,81 +8,37 @@
   border-radius: 12px;
   overflow: hidden;
   font-family: 'Courier New', monospace;
-  border: 1px solid rgba(0,204,255,0.4);
-  box-shadow:
-    0 0 0 1px rgba(0,204,255,0.1),
-    0 0 40px rgba(0,204,255,0.07),
-    0 0 80px rgba(0,204,255,0.04),
-    0 8px 48px rgba(0,0,0,0.7),
-    inset 0 0 120px rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-2), inset 0 0 90px rgba(0,0,0,0.4);
 }
 
-/* Animated shimmer top border */
+/* Static hairline top border (dulu shimmer beranimasi 4s — visual noise) */
 .map-wrap::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(0,204,255,0.3) 10%,
-    #00ccff 30%,
-    #00ffcc 50%,
-    #00ccff 70%,
-    rgba(0,204,255,0.3) 90%,
+    rgba(0,204,255,0.35) 30%,
+    rgba(0,255,204,0.4) 50%,
+    rgba(0,204,255,0.35) 70%,
     transparent 100%
   );
-  animation: shimmerBorder 4s ease-in-out infinite;
   z-index: 1002;
   pointer-events: none;
-}
-
-/* Bottom edge glow */
-.map-wrap::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,204,255,0.25), rgba(0,255,204,0.2), rgba(0,204,255,0.25), transparent);
-  z-index: 1002;
-  pointer-events: none;
-}
-
-@keyframes shimmerBorder {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
 }
 
 .map-canvas { width: 100%; height: 100%; background: #050810; }
 
-
-/* ===== SCANLINE OVERLAY ===== */
-.scanline-overlay {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0,0,0,0) 0px,
-    rgba(0,0,0,0) 2px,
-    rgba(0,0,0,0.07) 2px,
-    rgba(0,0,0,0.07) 3px
-  );
-  pointer-events: none;
-  z-index: 998;
-  border-radius: 12px;
-}
-
-/* ===== SCAN BEAM (disabled – was causing full-height repaint every frame) ===== */
-.scan-beam { display: none; }
-
-/* ===== VIGNETTE ===== */
+/* ===== VIGNETTE (halus — memberi fokus ke tengah tanpa menggelapkan data) ===== */
 .map-vignette {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    transparent 50%,
-    rgba(0,0,0,0.35) 100%
+    transparent 60%,
+    rgba(0,0,0,0.28) 100%
   );
   pointer-events: none;
   z-index: 996;
@@ -132,7 +88,7 @@
   font-family: 'Orbitron', 'Courier New', monospace;
 }
 
-.empty-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; animation: pulse-slow 3s ease-in-out infinite; }
+.empty-icon { display: block; margin: 0 auto 18px; color: var(--accent); opacity: 0.55; animation: pulse-slow 3s ease-in-out infinite; }
 .empty-title { font-size: 20px; font-weight: 700; letter-spacing: 4px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(0,204,255,0.6); }
 .empty-subtitle { font-size: 12px; letter-spacing: 2px; opacity: 0.5; }
 
@@ -221,10 +177,10 @@
 }
 
 .hud-box.crit {
-  border-top-color: rgba(255,0,68,0.8);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 16px rgba(255,0,68,0.1);
+  border-top-color: rgba(255,45,85,0.8);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 16px rgba(255,45,85,0.1);
 }
-.hud-box.crit::before { background: linear-gradient(90deg, transparent, rgba(255,0,68,0.5), transparent); }
+.hud-box.crit::before { background: linear-gradient(90deg, transparent, rgba(255,45,85,0.5), transparent); }
 
 .hud-box.high {
   border-top-color: rgba(255,136,0,0.8);
@@ -233,10 +189,10 @@
 .hud-box.high::before { background: linear-gradient(90deg, transparent, rgba(255,136,0,0.5), transparent); }
 
 .hud-box.med {
-  border-top-color: rgba(255,221,0,0.8);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 16px rgba(255,221,0,0.08);
+  border-top-color: rgba(255,204,0,0.8);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 16px rgba(255,204,0,0.08);
 }
-.hud-box.med::before { background: linear-gradient(90deg, transparent, rgba(255,221,0,0.5), transparent); }
+.hud-box.med::before { background: linear-gradient(90deg, transparent, rgba(255,204,0,0.5), transparent); }
 
 .hud-num {
   display: block;
@@ -248,9 +204,9 @@
   text-shadow: 0 0 12px rgba(0,204,255,0.5);
 }
 
-.hud-box.crit .hud-num { color: #ff0044; text-shadow: 0 0 12px rgba(255,0,68,0.6); }
+.hud-box.crit .hud-num { color: #ff2d55; text-shadow: 0 0 12px rgba(255,45,85,0.6); }
 .hud-box.high .hud-num { color: #ff8800; text-shadow: 0 0 12px rgba(255,136,0,0.5); }
-.hud-box.med  .hud-num { color: #ffdd00; text-shadow: 0 0 12px rgba(255,221,0,0.4); }
+.hud-box.med  .hud-num { color: #ffcc00; text-shadow: 0 0 12px rgba(255,204,0,0.4); }
 
 .hud-lbl {
   display: block;
@@ -351,22 +307,15 @@
   animation: livePulse 2s ease-in-out infinite;
 }
 
-.status-scrolling {
-  flex: 1;
-  overflow: hidden;
-  padding-left: 14px;
-}
+/* Backend offline: titik + teks jadi merah (mengikuti status nyata) */
+.status-online.off { color: #ff2d55; text-shadow: 0 0 6px rgba(255,45,85,0.5); }
+.status-dot-sm.off { background: #ff2d55; box-shadow: 0 0 5px #ff2d55; }
 
-.status-ticker {
-  display: inline-block;
-  animation: ticker 30s linear infinite;
-  white-space: nowrap;
-  color: #1a4a5a;
-}
+.status-spacer { flex: 1; }
 
-@keyframes ticker {
-  0%   { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+.status-item.dim {
+  color: var(--text-faint);
+  border-right: none;
 }
 
 /* ===== DETAIL PANEL ===== */
@@ -398,8 +347,8 @@
 
 .dp-header button {
   background: none;
-  border: 1px solid rgba(255,0,68,0.5);
-  color: #ff0044;
+  border: 1px solid rgba(255,45,85,0.5);
+  color: #ff2d55;
   cursor: pointer;
   padding: 3px 8px;
   font-size: 12px;
@@ -408,7 +357,7 @@
   pointer-events: all;
 }
 
-.dp-header button:hover { background: rgba(255,0,68,0.2); border-color: #ff0044; }
+.dp-header button:hover { background: rgba(255,45,85,0.2); border-color: #ff2d55; }
 
 .dp-row {
   display: flex;
