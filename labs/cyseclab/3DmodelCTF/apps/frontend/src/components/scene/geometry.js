@@ -9,11 +9,15 @@ export function box([sx, sy, sz, px, py, pz, rotY = 0]) {
   return g.translate(px, py, pz)
 }
 
+// Polyhedron (octa/tetra/icosahedron) tidak ber-index; kalau ada yang
+// campur, semua dijadikan non-indexed supaya bisa digabung.
 export function mergeAll(geometries) {
   const list = geometries.filter(Boolean)
   if (!list.length) return null
-  const merged = mergeGeometries(list)
-  for (const g of list) g.dispose()
+  const mixed = list.some((g) => !g.index)
+  const ready = mixed ? list.map((g) => (g.index ? g.toNonIndexed() : g)) : list
+  const merged = mergeGeometries(ready)
+  for (const g of new Set([...list, ...ready])) g.dispose()
   return merged
 }
 
@@ -37,7 +41,7 @@ const perp = (d) => new Vector3(-d.z, 0, d.x).normalize()
 
 // Offset kiri/kanan per titik. Ujung mengikuti tepi room (tangent port)
 // supaya deck menempel rata; sambungan tengah memakai miter.
-function sideOffsets(points, tangents, width) {
+export function sideOffsets(points, tangents, width) {
   const dirs = points.slice(1).map((p, i) => p.clone().sub(points[i]))
   return points.map((_, i) => {
     const before = dirs[Math.max(0, i - 1)]

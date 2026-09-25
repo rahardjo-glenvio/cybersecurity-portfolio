@@ -20,6 +20,7 @@ Core backend ikut berjalan di browser: database di memori, tanpa WebSocket. Coco
 ```bash
 npm run dev:standalone     # dev lokal tanpa backend
 npm run build:standalone   # output statis: apps/frontend/dist-standalone/
+VITE_BRANDING=neutral npm run build:standalone   # paksa emblem netral (demo publik)
 ```
 
 State hilang saat halaman dimuat ulang dan tidak dibagi antar viewer. Flag mock ikut ter-bundle, jadi mode ini hanya untuk demo, bukan kompetisi.
@@ -27,6 +28,10 @@ State hilang saat halaman dimuat ulang dan tidak dibagi antar viewer. Flag mock 
 ### Scene 3D
 
 Audit visual, keputusan desain, dan before/after ada di [`docs/visual-audit.md`](docs/visual-audit.md). Nilai lighting, fog, kamera, dan bloom diatur di `apps/frontend/src/config/scene.js`; layout (port corridor, bounds) dihitung otomatis dari map JSON di `components/scene/layout.js`.
+
+Dekorasi per kategori (annex, props animasi, modul tersegel untuk room LOCKED, soket jalur, backdrop logo) dijelaskan di [`docs/room-decoration.md`](docs/room-decoration.md). Style kategori dan alias ada di `apps/frontend/src/config/categories.js`.
+
+Logo institusi untuk backdrop tidak ikut di repo: taruh file gambarnya di `apps/frontend/src/assets/branding/` (di-gitignore). Tanpa file itu, backdrop memakai emblem netral.
 
 ## Kontrol
 

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const BACKEND = process.env.BACKEND_URL ?? 'http://127.0.0.1:8787'
@@ -23,12 +23,25 @@ function htmlFragment() {
   }
 }
 
+// VITE_BRANDING=neutral: logo lokal di src/assets/branding diganti modul
+// kosong (`export default null`), jadi tidak ikut ter-bundle walau filenya ada.
+function neutralBranding() {
+  const VIRTUAL = '\0neutral-branding'
+  return {
+    name: 'neutral-branding',
+    enforce: 'pre',
+    resolveId: (source) => (/\/assets\/branding\//.test(source) ? VIRTUAL : null),
+    load: (id) => (id === VIRTUAL ? 'export default null' : null),
+  }
+}
+
 // `--mode standalone`: core backend ikut jalan di browser (tanpa server),
 // output berupa file statis dengan path relatif.
 export default defineConfig(({ mode }) => {
   const standalone = mode === 'standalone'
+  const neutral = loadEnv(mode, process.cwd(), 'VITE_').VITE_BRANDING === 'neutral'
   return {
-    plugins: [react(), standalone && htmlFragment()],
+    plugins: [react(), standalone && htmlFragment(), neutral && neutralBranding()],
     base: standalone ? './' : '/',
     server: {
       port: 5173,

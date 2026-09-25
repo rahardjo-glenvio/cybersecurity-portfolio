@@ -38,10 +38,20 @@ export default function CameraRig({ team, layout }) {
 
   const roomPos = team.rooms.find((r) => r.id === selectedRoomId)?.position3D
   const roomKey = roomPos?.join(',')
+  // Terbang ke room dengan bingkai yang memperlihatkan dekorasinya: annex di
+  // barat -> kamera pindah ke depan-kiri; annex di belakang -> kamera lebih tinggi.
   useEffect(() => {
     if (!roomPos) return
     const target = new Vector3(roomPos[0], roomPos[1] + 0.9, roomPos[2])
-    pending.current = { target, position: target.clone().add(ROOM_OFFSET) }
+    const offset = ROOM_OFFSET.clone()
+    const annex = layout.annexes.get(selectedRoomId)
+    if (annex) {
+      const normal = new Vector3(Math.sin(annex.rotationY), 0, Math.cos(annex.rotationY))
+      if (normal.x < -0.5) offset.x = -offset.x
+      if (normal.z < -0.5) offset.y *= 1.4
+      target.addScaledVector(normal, 0.55)
+    }
+    pending.current = { target, position: target.clone().add(offset) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoomId, roomKey])
 

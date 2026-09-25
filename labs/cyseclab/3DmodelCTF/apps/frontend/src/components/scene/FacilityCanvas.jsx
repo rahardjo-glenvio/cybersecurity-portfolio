@@ -6,6 +6,7 @@ import { computeLayout, layoutKey } from './layout'
 import Backdrop from './environment/Backdrop'
 import EnvironmentMap from './environment/EnvironmentMap'
 import FacilityDeck from './environment/FacilityDeck'
+import BrandBackdrop from './environment/BrandBackdrop'
 import Particles from './environment/Particles'
 import SceneLighting from './lighting/SceneLighting'
 import Facility from './Facility'
@@ -37,6 +38,7 @@ export default function FacilityCanvas() {
         <EnvironmentMap />
         <SceneLighting layout={layout} team={team} />
         <FacilityDeck layout={layout} />
+        <BrandBackdrop layout={layout} />
         <Facility team={team} layout={layout} />
         <Particles bounds={layout.bounds} count={ATMOSPHERE.particles} />
         <TrackingPoints team={team} layout={layout} />

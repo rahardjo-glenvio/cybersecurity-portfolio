@@ -23,6 +23,11 @@ const MAX_SLOPE = Math.tan((30 * Math.PI) / 180)
 const PORT_GAP = OPENING_W + 0.22
 const CLUSTER_OFFSET = 2.8
 const DECK_PAD = 1.5
+export const ANNEX_D = 1.0 // kedalaman platform dekorasi di sisi room
+const ANNEX_INSET = 0.2 // jarak dari ujung sisi (pilar sudut)
+// E dulu: menghadap kamera utama. S terakhir: label menggantung di depan room.
+const ANNEX_ORDER = ['E', 'W', 'N', 'S']
+export const CORE_DECOR_R = 3.7 // jangkauan dekorasi core (pylon di busur belakang)
 export const SIDES = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }
 
 // Kunci memo: hanya field yang memengaruhi geometri.
@@ -70,7 +75,77 @@ export function computeLayout(team) {
     footprint: [1.4, 1.3], // pad + marking lantai di depannya
   }
 
-  return { nodes, lobby, corridors, links, cluster, bounds: boundsOf([...nodes.values()], cluster) }
+  const annexes = placeAnnexes(nodes, corridors, cluster)
+  const bounds = boundsOf([...nodes.values()], cluster, annexes)
+  // Monolith branding di tengah-belakang arena, di luar deck.
+  const backdrop = { x: bounds.fx, z: bounds.minZ - 5 }
+  return { nodes, lobby, corridors, links, cluster, annexes, bounds, backdrop }
+}
+
+// ---------- Annex dekorasi ----------
+
+// Platform dekorasi di sisi room yang tidak punya port. Ditolak kalau
+// bersinggungan dengan node lain, corridor, cluster, atau annex lain.
+function placeAnnexes(nodes, corridors, cluster) {
+  const annexes = new Map()
+  for (const node of nodes.values()) {
+    if (node.shape !== 'rect') continue
+    const used = new Set(node.ports.map((p) => p.side))
+    for (const side of ANNEX_ORDER) {
+      if (used.has(side)) continue
+      const annex = annexFor(node, side)
+      if (annexClear(annex, nodes, corridors, cluster, annexes)) {
+        annexes.set(node.id, annex)
+        break
+      }
+    }
+  }
+  return annexes
+}
+
+function annexFor(node, side) {
+  const [nx, nz] = SIDES[side]
+  const alongX = nz !== 0
+  const length = (alongX ? node.w : node.d) - ANNEX_INSET * 2
+  const off = (alongX ? node.d : node.w) / 2
+  const [hx, hz] = alongX ? [length / 2, ANNEX_D / 2] : [ANNEX_D / 2, length / 2]
+  return {
+    room: node.id,
+    side,
+    // Frame lokal: origin di tepi slab setinggi lantai, +z keluar dari room.
+    origin: new Vector3(node.x + nx * off, node.floorY, node.z + nz * off),
+    rotationY: Math.atan2(nx, nz),
+    length,
+    depth: ANNEX_D,
+    elevated: node.y > 0,
+    plinthGap: off - off * 0.86, // jarak tepi slab ke muka plinth (plinth 0,86 × room)
+    rect: [node.x + nx * (off + ANNEX_D / 2), node.z + nz * (off + ANNEX_D / 2), hx, hz],
+  }
+}
+
+const rectsOverlap = ([ax, az, ahx, ahz], [bx, bz, bhx, bhz], margin) =>
+  Math.abs(ax - bx) < ahx + bhx + margin && Math.abs(az - bz) < ahz + bhz + margin
+
+function annexClear(annex, nodes, corridors, cluster, annexes) {
+  const [cx, cz, hx, hz] = annex.rect
+  for (const n of nodes.values()) {
+    if (n.id !== annex.room && rectsOverlap(annex.rect, [n.x, n.z, ...extent(n)], 0.35)) return false
+  }
+  if (rectsOverlap(annex.rect, [cluster.x, cluster.z, ...cluster.footprint], 0.3)) return false
+  for (const other of annexes.values()) if (rectsOverlap(annex.rect, other.rect, 0.2)) return false
+  const reach = CORRIDOR_W / 2 + 0.15
+  for (const c of corridors) {
+    for (let i = 1; i < c.points.length; i++) {
+      const [a, b] = [c.points[i - 1], c.points[i]]
+      const steps = Math.ceil(a.distanceTo(b) / 0.1)
+      for (let s = 0; s <= steps; s++) {
+        const x = a.x + ((b.x - a.x) * s) / steps
+        const z = a.z + ((b.z - a.z) * s) / steps
+        if (Math.abs(x - cx) < hx + reach && Math.abs(z - cz) < hz + reach) return false
+      }
+    }
+  }
+  return true
 }
 
 // ---------- Port ----------
@@ -173,7 +248,7 @@ function pylonsFor(points, nodes) {
   const b = points[points.length > 2 ? points.length - 2 : 1]
   const span = Math.hypot(b.x - a.x, b.z - a.z)
   if (span < 3) return [] // bentang pendek tidak butuh penyangga (dan terlihat janggal)
-  const drop =(Math.abs(b.y - a.y) / span) * 0.14 + 0.01 // pelat atas 0,24 m di bawah deck miring
+  const drop = (Math.abs(b.y - a.y) / span) * 0.14 + 0.01 // pelat atas 0,24 m di bawah deck miring
   const ts = span > 7 ? [1 / 3, 2 / 3] : [0.5]
   const pylons = []
   for (const t of ts) {
@@ -194,15 +269,17 @@ function pylonsFor(points, nodes) {
 
 const extent = (n) => (n.shape === 'rect' ? [n.w / 2, n.d / 2] : [n.radius, n.radius])
 
-function boundsOf(nodes, cluster) {
-  const boxes = nodes.map((n) => [n.x, n.z, ...extent(n)])
+function boundsOf(nodes, cluster, annexes) {
+  const boxes = nodes.map((n) => (n.core ? [n.x, n.z, CORE_DECOR_R, CORE_DECOR_R] : [n.x, n.z, ...extent(n)]))
+  for (const a of annexes.values()) boxes.push(a.rect)
+  const focusCount = boxes.length
   boxes.push([cluster.x, cluster.z, ...cluster.footprint])
   const minX = Math.min(...boxes.map(([x, , ex]) => x - ex)) - DECK_PAD
   const maxX = Math.max(...boxes.map(([x, , ex]) => x + ex)) + DECK_PAD
   const minZ = Math.min(...boxes.map(([, z, , ez]) => z - ez)) - DECK_PAD
   const maxZ = Math.max(...boxes.map(([, z, , ez]) => z + ez)) + DECK_PAD
   const maxY = Math.max(...nodes.map((n) => n.floorY + (n.core ? 3.2 : WALL_H)))
-  const focus = boxes.slice(0, -1)
+  const focus = boxes.slice(0, focusCount)
   const fx = (Math.min(...focus.map(([x, , ex]) => x - ex)) + Math.max(...focus.map(([x, , ex]) => x + ex))) / 2
   const fz = (Math.min(...focus.map(([, z, , ez]) => z - ez)) + Math.max(...focus.map(([, z, , ez]) => z + ez))) / 2
   return { minX, maxX, minZ, maxZ, maxY, cx: (minX + maxX) / 2, cz: (minZ + maxZ) / 2, fx, fz, width: maxX - minX, depth: maxZ - minZ }

@@ -1,0 +1,4 @@
+# Logo institusi hanya disimpan lokal, tidak di-commit (repo publik).
+# Taruh satu file .png/.webp/.svg di sini; lihat src/config/branding.js.
+*
+!.gitignore

@@ -24,6 +24,7 @@ const TRIM_H = 0.03
 const TRIM_W = WALL_T * 0.55 // garis neon di atas dinding, lebih tipis dari dinding
 const PILLAR_H = WALL_H + 0.08
 const SHIELD_PAD = 0.13
+const SHUTTER_H = WALL_H - 0.1 // di bawah lintel + lampu gerbang
 const CORE_PILLAR_R = 1.72
 const CORE_CENTER_Y = FLOOR_H + 1.45 // kristal & ring
 const DOME_STRETCH = 1.2
@@ -203,6 +204,11 @@ function buildRoomGeometry({ w, d, y, ports }) {
         hull.push(place(p.t + e * (OPENING_W / 2 + 0.03), 0.06, WALL_T + 0.03, WALL_H, FLOOR_H + WALL_H / 2))
       }
       trim.push(place(p.t, OPENING_W - 0.04, WALL_T, 0.012, FLOOR_H + 0.006)) // ambang pintu
+      // Portal: lintel (trim status di atasnya) + lampu gerbang di bawahnya, jadi
+      // jalur terlihat masuk ke soket room, bukan ke celah dinding.
+      hull.push(place(p.t, OPENING_W + 0.12, WALL_T + 0.03, 0.08, FLOOR_H + WALL_H - 0.04))
+      trim.push(place(p.t, OPENING_W + 0.12, TRIM_W, TRIM_H, top + TRIM_H / 2))
+      trim.push(place(p.t, OPENING_W - 0.1, WALL_T * 0.5, 0.014, FLOOR_H + WALL_H - 0.087))
       openings.push({
         position: alongX ? [p.t, FLOOR_H, nz * line] : [nx * line, FLOOR_H, p.t],
         rotationY: alongX ? 0 : Math.PI / 2,
@@ -224,7 +230,7 @@ function buildRoomGeometry({ w, d, y, ports }) {
     trim: mergeBoxes(trim),
     plinth,
     floorLine: rectFrame(w - 0.36, d - 0.36, 0.035),
-    shutter: new BoxGeometry(OPENING_W - 0.04, WALL_H - 0.04, 0.03).translate(0, (WALL_H - 0.04) / 2, 0),
+    shutter: new BoxGeometry(OPENING_W - 0.04, SHUTTER_H, 0.03).translate(0, SHUTTER_H / 2, 0),
     shieldBox,
     shieldEdges: new EdgesGeometry(shieldBox),
     shieldH,
