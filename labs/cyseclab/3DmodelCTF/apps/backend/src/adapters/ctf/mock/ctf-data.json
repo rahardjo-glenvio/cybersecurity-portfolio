@@ -1,0 +1,99 @@
+{
+  "_note": "Data MOCK CTF engine (pengganti CTFd di LAB). Hanya dibaca backend. Flag plaintext di sini hanya untuk LAB.",
+  "teams": [
+    { "id": "team-01", "name": "Team Alpha", "color": "#22d3ee" },
+    { "id": "team-02", "name": "Team Bravo", "color": "#a78bfa" },
+    { "id": "team-03", "name": "Team Charlie", "color": "#f472b6" },
+    { "id": "team-04", "name": "Team Delta", "color": "#facc15" },
+    { "id": "team-05", "name": "Team Echo", "color": "#60a5fa" },
+    { "id": "team-06", "name": "Team Foxtrot", "color": "#34d399" }
+  ],
+  "playerTemplate": [
+    { "suffix": "a", "name": "P1", "color": "#fb923c" },
+    { "suffix": "b", "name": "P2", "color": "#4ade80" }
+  ],
+  "challenges": {
+    "chal-town-gate": {
+      "title": "Gatekeeper Login",
+      "category": "web",
+      "points": 100,
+      "description": "Portal gerbang kota memakai login lama. Temukan cara masuk sebagai penjaga dan ambil token gerbang.",
+      "files": [{ "name": "gatekeeper-src.zip", "size": "48 KB" }],
+      "hint": "Perhatikan cara session divalidasi.",
+      "flag": "LAB{gate_session_fixation}",
+      "instance": { "host": "town-gate.lab", "port": 8080 }
+    },
+    "chal-belfry": {
+      "title": "Bell Signals",
+      "category": "forensics",
+      "points": 150,
+      "description": "Lonceng menara berbunyi dengan pola aneh. Rekaman jaringan menara disita, analisis pola sinyalnya.",
+      "files": [{ "name": "belfry-capture.pcapng", "size": "2.1 MB" }],
+      "hint": "Tidak semua paket DNS itu wajar.",
+      "flag": "LAB{dns_bell_exfil}",
+      "instance": null
+    },
+    "chal-guild-hall": {
+      "title": "Guild Ledger",
+      "category": "reverse-engineering",
+      "points": 200,
+      "description": "Buku besar serikat dagang dikunci program validasi. Balik logika pengecekannya.",
+      "files": [{ "name": "ledger.elf", "size": "860 KB" }],
+      "hint": "Validasi dilakukan per blok 4 byte.",
+      "flag": "LAB{ledger_xor_blocks}",
+      "instance": null
+    },
+    "chal-telegraph": {
+      "title": "Morse Cipher Relay",
+      "category": "cryptography",
+      "points": 200,
+      "description": "Kantor telegraf mengirim pesan terenkripsi dengan nonce yang dipakai ulang. Pulihkan pesan terakhir.",
+      "files": [{ "name": "relay-dump.txt", "size": "14 KB" }],
+      "hint": "Dua ciphertext, satu keystream.",
+      "flag": "LAB{nonce_reuse_relay}",
+      "instance": null
+    },
+    "chal-mayor": {
+      "title": "Mayor's Safe",
+      "category": "pwn",
+      "points": 300,
+      "description": "Brankas walikota dijaga service lama tanpa batas input. Eksploitasi untuk membaca dokumen rahasia.",
+      "files": [{ "name": "safe-service", "size": "32 KB" }],
+      "hint": "Binary tidak PIE.",
+      "flag": "LAB{mayor_rop_safe}",
+      "instance": { "host": "mayor.lab", "port": 31337 }
+    },
+    "chal-core": {
+      "title": "Core Override",
+      "category": "core",
+      "points": 500,
+      "description": "Inti sistem kota. Gabungkan akses dari Mayor's Office dan Telegraph Office untuk override core.",
+      "files": [{ "name": "core-manifest.json", "size": "3 KB" }],
+      "hint": "Kunci dari dua jalur harus digabung.",
+      "flag": "LAB{old_town_core_breached}",
+      "instance": { "host": "core.lab", "port": 443 }
+    }
+  },
+  "seed": {
+    "team-02": {
+      "solved": ["chal-town-gate", "chal-belfry", "chal-guild-hall"],
+      "positions": { "player-02-a": "mayors-office", "player-02-b": "telegraph-office" }
+    },
+    "team-03": {
+      "solved": ["chal-belfry"],
+      "positions": { "player-03-a": "town-gate", "player-03-b": "telegraph-office" }
+    },
+    "team-04": {
+      "solved": ["chal-town-gate", "chal-belfry", "chal-guild-hall", "chal-telegraph", "chal-mayor"],
+      "positions": { "player-04-a": "old-town-core", "player-04-b": "mayors-office" }
+    },
+    "team-05": {
+      "solved": [],
+      "positions": { "player-05-a": "town-gate" }
+    },
+    "team-06": {
+      "solved": ["chal-town-gate"],
+      "positions": { "player-06-a": "belfry", "player-06-b": "town-gate" }
+    }
+  }
+}

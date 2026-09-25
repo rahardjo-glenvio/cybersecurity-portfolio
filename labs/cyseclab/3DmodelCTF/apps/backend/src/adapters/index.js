@@ -1,0 +1,36 @@
+import {
+  LinuxAgentAdapter,
+  MockTelemetryAdapter,
+  ProxmoxTelemetryAdapter,
+  WindowsAgentAdapter,
+} from '@lab/telemetry'
+import { MockCTFEngineAdapter } from './ctf/MockCTFEngineAdapter.js'
+import { CTFdAdapter } from './ctf/CTFdAdapter.js'
+
+// Satu-satunya tempat pemilihan implementasi. Ganti lewat env tanpa
+// mengubah progression engine atau visualisasi.
+export function createCtfAdapter(name, options = {}) {
+  switch (name) {
+    case 'mock':
+      return new MockCTFEngineAdapter(options)
+    case 'ctfd':
+      return new CTFdAdapter({ baseUrl: process.env.CTFD_URL, apiToken: process.env.CTFD_TOKEN })
+    default:
+      throw new Error(`CTF adapter tidak dikenal: ${name}`)
+  }
+}
+
+export function createTelemetryAdapter(name) {
+  switch (name) {
+    case 'mock':
+      return new MockTelemetryAdapter()
+    case 'proxmox':
+      return new ProxmoxTelemetryAdapter({ apiUrl: process.env.PROXMOX_URL })
+    case 'linux-agent':
+      return new LinuxAgentAdapter()
+    case 'windows-agent':
+      return new WindowsAgentAdapter()
+    default:
+      throw new Error(`Telemetry adapter tidak dikenal: ${name}`)
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@lab/shared",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Konstanta publik (event, status, protokol). Aman diimpor frontend: tidak ada data challenge.",
+  "exports": {
+    ".": "./src/index.js"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@lab/game-engine",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Progression engine generik berbasis dependency graph (tanpa IO, tanpa CTFd).",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "dependencies": {
+    "@lab/shared": "*"
+  }
+}

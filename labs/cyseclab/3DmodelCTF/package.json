@@ -1,0 +1,23 @@
+{
+  "name": "ctf-progression-lab",
+  "private": true,
+  "version": "0.2.0",
+  "description": "LAB CTF Progression & Player Activity Tracking: progression graph per tim, posisi per player, telemetry semantic, visualisasi 3D real-time.",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm run dev -w @lab/backend\" \"npm run dev -w @lab/frontend\"",
+    "build": "npm run build -w @lab/frontend",
+    "start": "npm run start -w @lab/backend",
+    "test": "node --disable-warning=ExperimentalWarning --test \"packages/*/test/*.test.js\" \"apps/backend/test/*.test.js\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

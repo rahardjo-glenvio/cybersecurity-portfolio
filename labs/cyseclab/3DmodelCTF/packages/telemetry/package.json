@@ -1,0 +1,13 @@
+{
+  "name": "@lab/telemetry",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "TelemetryAdapter interface, adapter mock/placeholder, dan TelemetryProcessor (raw -> semantic event).",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "dependencies": {
+    "@lab/shared": "*"
+  }
+}

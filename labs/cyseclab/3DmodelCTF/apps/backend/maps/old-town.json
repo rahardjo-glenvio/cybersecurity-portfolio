@@ -1,0 +1,99 @@
+{
+  "id": "old-town",
+  "name": "Old Town",
+  "version": 1,
+  "description": "Map LAB pertama. Engine generik: map lain cukup file JSON dengan struktur yang sama.",
+  "lobby": { "position3D": [0, 0, 9.5] },
+  "links": [["town-gate", "belfry"]],
+  "lockedRoomFields": ["id", "name", "stage", "type", "position3D", "size"],
+  "rooms": [
+    {
+      "id": "town-gate",
+      "name": "Town Gate",
+      "category": "web",
+      "stage": 1,
+      "points": 100,
+      "challengeId": "chal-town-gate",
+      "prerequisites": [],
+      "position3D": [-4.5, 0, 4.5]
+    },
+    {
+      "id": "belfry",
+      "name": "Belfry",
+      "category": "forensics",
+      "stage": 1,
+      "points": 150,
+      "challengeId": "chal-belfry",
+      "prerequisites": [],
+      "position3D": [4.5, 0, 4.5]
+    },
+    {
+      "id": "guild-hall",
+      "name": "Guild Hall",
+      "category": "reverse-engineering",
+      "stage": 2,
+      "points": 200,
+      "challengeId": "chal-guild-hall",
+      "prerequisites": ["town-gate", "belfry"],
+      "requires": "all",
+      "position3D": [-4.5, 1.4, 0]
+    },
+    {
+      "id": "telegraph-office",
+      "name": "Telegraph Office",
+      "category": "cryptography",
+      "stage": 2,
+      "points": 200,
+      "challengeId": "chal-telegraph",
+      "prerequisites": ["belfry"],
+      "position3D": [4.5, 1.4, 0]
+    },
+    {
+      "id": "mayors-office",
+      "name": "Mayor's Office",
+      "category": "pwn",
+      "stage": 3,
+      "points": 300,
+      "challengeId": "chal-mayor",
+      "prerequisites": ["guild-hall"],
+      "position3D": [-4.5, 2.8, -4.5]
+    },
+    {
+      "id": "old-town-core",
+      "name": "Old Town Core",
+      "type": "core",
+      "category": "core",
+      "stage": 4,
+      "points": 500,
+      "challengeId": "chal-core",
+      "prerequisites": ["mayors-office", "telegraph-office"],
+      "requires": "all",
+      "position3D": [0, 4.2, -8.5],
+      "size": [4.6, 4.6]
+    }
+  ],
+  "demo": [
+    { "wait": 0, "command": "resetTeam" },
+    { "wait": 1000, "command": "enterRoom", "player": 0, "roomId": "town-gate" },
+    { "wait": 900, "command": "enterRoom", "player": 1, "roomId": "belfry" },
+    { "wait": 1300, "command": "openTool", "player": 1, "tool": "wireshark" },
+    { "wait": 900, "command": "openTool", "player": 0, "tool": "burpsuite" },
+    { "wait": 1400, "command": "wrongFlag", "player": 1 },
+    { "wait": 2100, "command": "correctFlag", "player": 1 },
+    { "wait": 2300, "command": "downloadFile", "player": 0 },
+    { "wait": 1500, "command": "correctFlag", "player": 0 },
+    { "wait": 2400, "command": "enterRoom", "player": 0, "roomId": "guild-hall" },
+    { "wait": 800, "command": "enterRoom", "player": 1, "roomId": "telegraph-office" },
+    { "wait": 1500, "command": "openTool", "player": 0, "tool": "ghidra" },
+    { "wait": 900, "command": "openTool", "player": 1, "tool": "python3" },
+    { "wait": 1600, "command": "correctFlag", "player": 0 },
+    { "wait": 2400, "command": "enterRoom", "player": 0, "roomId": "mayors-office" },
+    { "wait": 1300, "command": "startInstance", "player": 0 },
+    { "wait": 1600, "command": "correctFlag", "player": 1 },
+    { "wait": 2100, "command": "wrongFlag", "player": 0 },
+    { "wait": 2100, "command": "correctFlag", "player": 0 },
+    { "wait": 2800, "command": "enterRoom", "player": 0, "roomId": "old-town-core" },
+    { "wait": 900, "command": "enterRoom", "player": 1, "roomId": "old-town-core" },
+    { "wait": 2200, "command": "correctFlag", "player": 0 }
+  ]
+}
