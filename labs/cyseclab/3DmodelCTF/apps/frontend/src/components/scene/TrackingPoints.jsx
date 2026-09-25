@@ -7,7 +7,7 @@ import { ACTIVITY_COLOR, COLORS } from '../../config/theme'
 import { eventStream } from '../../lib/eventStream'
 import { damp } from '../../utils/anim'
 import { playerLabelTexture } from './labels'
-import { markers, roomCenter, slotPosition } from './markers'
+import { markers, routeWaypoints, slotPosition } from './markers'
 
 const SPEED = 3.4
 const PULSE_COLOR = {
@@ -23,13 +23,15 @@ const now = () => performance.now() / 1000
 
 // Player = tracking point (bukan humanoid). Posisi resmi dari backend;
 // perpindahan dianimasikan mengikuti path corridor yang dihitung backend.
-export default function TrackingPoints({ team }) {
+export default function TrackingPoints({ team, layout }) {
   const teamRef = useRef(team)
+  const layoutRef = useRef(layout)
   useLayoutEffect(() => {
     teamRef.current = team
+    layoutRef.current = layout
     // Sinkron snapshot: kalau tidak sedang bergerak dan room berbeda, pindahkan.
     team.players.forEach((p, i) => {
-      const target = slotPosition(team, p.currentRoom, i)
+      const target = slotPosition(layout, p.currentRoom, i)
       const mk = markers.get(p.id)
       if (!mk) {
         markers.set(p.id, { pos: target, queue: [], room: p.currentRoom, pulseAt: -10, pulseColor: COLORS.cyan })
@@ -38,7 +40,7 @@ export default function TrackingPoints({ team }) {
         mk.room = p.currentRoom
       }
     })
-  }, [team])
+  }, [team, layout])
 
   useEffect(() => {
     const unsubscribe = eventStream.on((event) => {
@@ -48,8 +50,7 @@ export default function TrackingPoints({ team }) {
       if (!mk || index < 0) return
       if (event.type === E.PLAYER_ENTERED_ROOM) {
         const path = event.payload?.path?.length ? event.payload.path : [mk.room, event.roomId]
-        const hops = path.slice(1)
-        mk.queue = hops.map((id, k) => (k === hops.length - 1 ? slotPosition(t, id, index) : roomCenter(t, id)))
+        mk.queue = routeWaypoints(layoutRef.current, path, index)
         mk.room = event.roomId
       } else if (PULSE_COLOR[event.type]) {
         mk.pulseAt = now()

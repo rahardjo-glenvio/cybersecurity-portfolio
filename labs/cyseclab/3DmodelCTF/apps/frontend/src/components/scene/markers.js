@@ -1,10 +1,8 @@
 import { Vector3 } from 'three'
+import { HOVER } from './layout'
 
 // Posisi tracking point per player (dibaca tiap frame, di luar React state).
 export const markers = new Map()
-
-export const FLOOR_H = 0.2
-const HOVER = 0.55
 
 const SLOTS = [
   [-0.6, 0.35],
@@ -14,22 +12,24 @@ const SLOTS = [
   [0.6, -0.45],
 ]
 
-function anchorOf(team, roomId) {
-  if (!roomId || roomId === 'lobby') return { pos: team.lobby.position3D, core: false }
-  const room = team.rooms.find((r) => r.id === roomId)
-  return room ? { pos: room.position3D, core: room.type === 'core' } : { pos: team.lobby.position3D, core: false }
-}
-
-// Titik tengah room (dipakai sebagai titik lintasan saat melewati room).
-export function roomCenter(team, roomId) {
-  const { pos } = anchorOf(team, roomId)
-  return new Vector3(pos[0], pos[1] + FLOOR_H + HOVER, pos[2])
-}
+const nodeOf = (layout, roomId) => layout.nodes.get(roomId ?? 'lobby') ?? layout.lobby
 
 // Posisi slot player di dalam room supaya dua player tidak bertumpuk.
-export function slotPosition(team, roomId, index) {
-  const { pos, core } = anchorOf(team, roomId)
+export function slotPosition(layout, roomId, index) {
+  const node = nodeOf(layout, roomId)
   const [dx, dz] = SLOTS[index % SLOTS.length]
-  const k = core ? 1.6 : 1
-  return new Vector3(pos[0] + dx * k, pos[1] + FLOOR_H + HOVER, pos[2] + dz * k)
+  const k = node.shape === 'octagon' ? 1.6 : 1
+  return new Vector3(node.x + dx * k, node.floorY + HOVER, node.z + dz * k)
+}
+
+// Rute sepanjang path backend: lewat pintu dan deck corridor, bukan
+// menembus dinding. Hop tanpa corridor langsung menuju slot tujuan.
+export function routeWaypoints(layout, path, index) {
+  const points = []
+  for (let i = 1; i < path.length; i++) {
+    const hop = layout.links.get(`${path[i - 1] ?? 'lobby'}|${path[i]}`)
+    if (hop) for (const p of hop) points.push(p.clone().setY(p.y + HOVER))
+  }
+  points.push(slotPosition(layout, path.at(-1), index))
+  return points
 }

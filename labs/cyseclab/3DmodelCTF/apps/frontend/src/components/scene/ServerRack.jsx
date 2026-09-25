@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Color, MeshBasicMaterial, Object3D } from 'three'
 import { COLORS } from '../../config/theme'
+import { MAT } from './materials'
 import { damp, hash } from '../../utils/anim'
 
 const UNITS = 7
@@ -21,6 +22,7 @@ const LED_PALETTE = [
 const unitY = (i) => 0.28 + i * (UNIT_H + UNIT_GAP)
 
 // Server rack (reuse dari prototype lama) sebagai instance cluster.
+// Body & unit memakai material bersama; LED/strip tetap emissive.
 // load 0..1: semakin banyak instance aktif, semakin banyak unit menyala.
 export default function ServerRack({ position, rotationY = 0, seed = 0, load = 0.2 }) {
 
@@ -74,23 +76,19 @@ export default function ServerRack({ position, rotationY = 0, seed = 0, load = 0
 
   return (
     <group position={position} rotation-y={rotationY}>
-      <mesh position={[0, 1.08, -0.37]}>
+      <mesh position={[0, 1.08, -0.37]} material={MAT.rackBody} castShadow receiveShadow>
         <boxGeometry args={[1.0, 2.16, 0.04]} />
-        <meshStandardMaterial color="#0e1626" roughness={0.45} metalness={0.6} />
       </mesh>
       {[-0.475, 0.475].map((x) => (
-        <mesh key={x} position={[x, 1.08, 0]}>
+        <mesh key={x} position={[x, 1.08, 0]} material={MAT.rackBody} castShadow receiveShadow>
           <boxGeometry args={[0.05, 2.16, 0.78]} />
-          <meshStandardMaterial color="#0e1626" roughness={0.45} metalness={0.6} flatShading />
         </mesh>
       ))}
-      <mesh position={[0, 2.18, 0]}>
+      <mesh position={[0, 2.18, 0]} material={MAT.hull} castShadow>
         <boxGeometry args={[1.06, 0.06, 0.84]} />
-        <meshStandardMaterial color={COLORS.metalLight} roughness={0.4} metalness={0.6} />
       </mesh>
-      <mesh position={[0, 0.07, 0]}>
+      <mesh position={[0, 0.07, 0]} material={MAT.rackBody} castShadow receiveShadow>
         <boxGeometry args={[1.0, 0.14, 0.78]} />
-        <meshStandardMaterial color="#0e1626" roughness={0.45} metalness={0.6} />
       </mesh>
       {[-0.47, 0.47].map((x) => (
         <mesh key={x} position={[x, 1.08, FRONT_Z + 0.03]} material={strip}>
@@ -100,9 +98,8 @@ export default function ServerRack({ position, rotationY = 0, seed = 0, load = 0
 
       {Array.from({ length: UNITS }, (_, u) => (
         <group key={u} position={[0, unitY(u), 0]}>
-          <mesh position={[0, UNIT_H / 2 - 0.02, 0.02]}>
+          <mesh position={[0, UNIT_H / 2 - 0.02, 0.02]} material={MAT.rackUnit} receiveShadow>
             <boxGeometry args={[0.86, UNIT_H, 0.72]} />
-            <meshStandardMaterial color={u % 2 ? '#1b2740' : '#172238'} roughness={0.4} metalness={0.6} flatShading />
           </mesh>
           <mesh position={[0.2, 0.01, FRONT_Z]}>
             <boxGeometry args={[0.32, 0.018, 0.006]} />

@@ -1,13 +1,15 @@
 import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
+import { POST } from '../../config/scene'
 
-// Post-processing ringan: bloom untuk material emissive (toneMapped=false),
-// lalu tone mapping ACES agar warna sama dengan mode tanpa bloom.
+// Post-processing ringan: bloom hanya menangkap emissive (> ~1), vignette
+// tipis untuk fokus tanpa mematikan pojok stage, lalu tone mapping ACES.
 export default function Effects() {
+  const { bloom, vignette } = POST
   return (
     <EffectComposer multisampling={4}>
-      <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.55} radius={0.6} />
-      <Vignette offset={0.25} darkness={0.7} />
+      <Bloom mipmapBlur luminanceThreshold={bloom.threshold} luminanceSmoothing={bloom.smoothing} intensity={bloom.intensity} radius={bloom.radius} />
+      <Vignette offset={vignette.offset} darkness={vignette.darkness} />
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
     </EffectComposer>
   )

@@ -5,7 +5,8 @@ import { EVENT_TYPES as E } from '@lab/shared'
 import { COLORS } from '../../config/theme'
 import { eventStream } from '../../lib/eventStream'
 import { easeInOutSine, easeOutCubic, envelope } from '../../utils/anim'
-import { FLOOR_H, markers } from './markers'
+import { FLOOR_H } from './layout'
+import { markers } from './markers'
 import UnlockBurst from './fx/UnlockBurst'
 
 let seq = 0

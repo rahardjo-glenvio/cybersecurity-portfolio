@@ -24,6 +24,10 @@ npm run build:standalone   # output statis: apps/frontend/dist-standalone/
 
 State hilang saat halaman dimuat ulang dan tidak dibagi antar viewer. Flag mock ikut ter-bundle, jadi mode ini hanya untuk demo, bukan kompetisi.
 
+### Scene 3D
+
+Audit visual, keputusan desain, dan before/after ada di [`docs/visual-audit.md`](docs/visual-audit.md). Nilai lighting, fog, kamera, dan bloom diatur di `apps/frontend/src/config/scene.js`; layout (port corridor, bounds) dihitung otomatis dari map JSON di `components/scene/layout.js`.
+
 ## Kontrol
 
 | Input | Aksi |

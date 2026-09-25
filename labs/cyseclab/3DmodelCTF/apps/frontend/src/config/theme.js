@@ -20,6 +20,21 @@ export const COLORS = {
 
 export const TONES = { ...COLORS }
 
+// Permukaan scene 3D: slate-blue yang cukup terang untuk menangkap key light
+// dan pantulan env map, tetap gelap di layar setelah tone mapping.
+export const SURFACE = {
+  hull: '#3b4e72',
+  slab: '#243149',
+  plinth: '#1b2539',
+  bridge: '#26344d',
+  shutter: '#3a4c70',
+  deck: '#0b1320',
+  deckSide: '#0b1220',
+  ground: '#05080f',
+  rack: '#1a263b',
+  rackUnit: '#26344f',
+}
+
 export const ROOM_STATUS_COLOR = {
   LOCKED: COLORS.slate,
   AVAILABLE: COLORS.cyan,
