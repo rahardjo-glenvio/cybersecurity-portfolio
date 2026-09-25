@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto'
 import { ACTIVITY_STATE as S, EVENT_TYPES as E, LOBBY_ID, TELEMETRY_EVENTS } from '@lab/shared'
 import {
   canEnter,
@@ -345,7 +344,7 @@ export class GameState {
 
   emit({ type, teamId = null, playerId = null, roomId = null, payload = {}, source }) {
     const event = {
-      eventId: `evt-${randomUUID()}`,
+      eventId: `evt-${crypto.randomUUID()}`,
       matchId: this.match?.id ?? null,
       type,
       teamId,

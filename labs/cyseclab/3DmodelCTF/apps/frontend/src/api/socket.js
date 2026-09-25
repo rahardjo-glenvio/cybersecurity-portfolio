@@ -3,11 +3,13 @@ import { useLab } from '../state/store'
 import { eventStream } from '../lib/eventStream'
 
 let socket = null
+let local = null
 let retry = 0
 let started = false
 
 function send(message) {
-  if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message))
+  if (local) local.receive(message)
+  else if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message))
 }
 
 function handle(msg) {
@@ -55,10 +57,19 @@ function connect() {
   }
 }
 
+// Mode standalone: pesan datang dari core di browser, bukan WebSocket.
+async function connectLocal() {
+  const { connect: connectToCore } = await import('../standalone/localServer')
+  local = await connectToCore(handle)
+  useLab.getState().setConnection('online')
+  send({ type: WS.SUBSCRIBE, teamId: useLab.getState().teamId })
+}
+
 export function startSocket() {
   if (started) return
   started = true
-  connect()
+  if (import.meta.env.MODE === 'standalone') connectLocal()
+  else connect()
   useLab.subscribe((s, prev) => {
     if (s.teamId !== prev.teamId) send({ type: WS.SUBSCRIBE, teamId: s.teamId })
   })

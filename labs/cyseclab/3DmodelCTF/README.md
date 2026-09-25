@@ -13,6 +13,17 @@ npm run dev
 
 Buka `http://localhost:5173`.
 
+### Mode standalone (tanpa server)
+
+Core backend ikut berjalan di browser: database di memori, tanpa WebSocket. Cocok untuk demo statis (misalnya Artifact claude.ai).
+
+```bash
+npm run dev:standalone     # dev lokal tanpa backend
+npm run build:standalone   # output statis: apps/frontend/dist-standalone/
+```
+
+State hilang saat halaman dimuat ulang dan tidak dibagi antar viewer. Flag mock ikut ter-bundle, jadi mode ini hanya untuk demo, bukan kompetisi.
+
 ## Kontrol
 
 | Input | Aksi |

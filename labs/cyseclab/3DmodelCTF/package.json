@@ -10,7 +10,9 @@
   ],
   "scripts": {
     "dev": "concurrently -k -n api,web -c cyan,magenta \"npm run dev -w @lab/backend\" \"npm run dev -w @lab/frontend\"",
+    "dev:standalone": "npm run dev:standalone -w @lab/frontend",
     "build": "npm run build -w @lab/frontend",
+    "build:standalone": "npm run build:standalone -w @lab/frontend",
     "start": "npm run start -w @lab/backend",
     "test": "node --disable-warning=ExperimentalWarning --test \"packages/*/test/*.test.js\" \"apps/backend/test/*.test.js\""
   },

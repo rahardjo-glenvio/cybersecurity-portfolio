@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import {
   LinuxAgentAdapter,
   MockTelemetryAdapter,
@@ -7,12 +8,16 @@ import {
 import { MockCTFEngineAdapter } from './ctf/MockCTFEngineAdapter.js'
 import { CTFdAdapter } from './ctf/CTFdAdapter.js'
 
+const MOCK_DATA_URL = new URL('./ctf/mock/ctf-data.json', import.meta.url)
+
 // Satu-satunya tempat pemilihan implementasi. Ganti lewat env tanpa
 // mengubah progression engine atau visualisasi.
 export function createCtfAdapter(name, options = {}) {
   switch (name) {
-    case 'mock':
-      return new MockCTFEngineAdapter(options)
+    case 'mock': {
+      const { dataUrl = MOCK_DATA_URL, ...rest } = options
+      return new MockCTFEngineAdapter({ ...rest, data: JSON.parse(readFileSync(dataUrl, 'utf8')) })
+    }
     case 'ctfd':
       return new CTFdAdapter({ baseUrl: process.env.CTFD_URL, apiToken: process.env.CTFD_TOKEN })
     default:

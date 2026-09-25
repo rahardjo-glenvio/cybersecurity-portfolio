@@ -3,6 +3,16 @@ import { create } from 'zustand'
 const FEED_LIMIT = 80
 const hashTeam = () => decodeURIComponent(location.hash.replace('#', '')) || null
 
+// Frame yang dibatasi (mis. embed Artifact) bisa menolak history API;
+// navigasi tetap jalan, hanya URL yang tidak ikut berubah.
+function setUrl(url) {
+  try {
+    history.replaceState(null, '', url)
+  } catch {
+    // abaikan
+  }
+}
+
 // State UI saja. Progression, status room, dan posisi player selalu datang
 // dari backend (snapshot WebSocket); frontend tidak menghitungnya sendiri.
 export const useLab = create((set, get) => ({
@@ -31,11 +41,11 @@ export const useLab = create((set, get) => ({
 
   openTeam: (teamId) => {
     set({ teamId, team: null, selectedRoomId: null })
-    history.replaceState(null, '', `#${teamId}`)
+    setUrl(`#${teamId}`)
   },
   closeTeam: () => {
     set({ teamId: null, team: null, selectedRoomId: null })
-    history.replaceState(null, '', location.pathname)
+    setUrl(location.pathname)
   },
   selectRoom: (selectedRoomId) => set({ selectedRoomId }),
   showNotice: (notice) => set({ notice: { ...notice, id: Date.now() } }),

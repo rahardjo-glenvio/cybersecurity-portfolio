@@ -1,21 +1,29 @@
-import { createHash, timingSafeEqual } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { CTFEngineAdapter } from './CTFEngineAdapter.js'
 
-const DATA_URL = new URL('./mock/ctf-data.json', import.meta.url)
-const sha256 = (value) => createHash('sha256').update(String(value)).digest()
+const sha256 = async (value) =>
+  new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(value))))
+
+// Perbandingan waktu-konstan untuk dua digest SHA-256.
+function digestEqual(a, b) {
+  let diff = a.length ^ b.length
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i]
+  return diff === 0
+}
 
 // Pengganti CTFd untuk LAB. Flag disimpan sebagai hash; plaintext hanya
 // dipakai tombol "Correct Flag" di LAB lewat getLabFlag().
+// Tanpa node:fs/node:crypto supaya juga jalan di browser (mode standalone):
+// data dikirim pemanggil (server Node membacanya dari mock/ctf-data.json).
 export class MockCTFEngineAdapter extends CTFEngineAdapter {
-  constructor({ latencyMs = 350, dataUrl = DATA_URL } = {}) {
+  constructor({ data, latencyMs = 350 } = {}) {
     super('mock-ctf')
+    if (!data) throw new Error('MockCTFEngineAdapter butuh data mock')
+    this.data = data
     this.latencyMs = latencyMs
-    this.dataUrl = dataUrl
   }
 
   async init() {
-    const data = JSON.parse(readFileSync(this.dataUrl, 'utf8'))
+    const { data } = this
     this.teams = data.teams
     this.players = data.teams.flatMap((team) =>
       data.playerTemplate.map((p) => ({
@@ -26,7 +34,7 @@ export class MockCTFEngineAdapter extends CTFEngineAdapter {
       })),
     )
     this.challenges = Object.entries(data.challenges).map(([id, c]) => ({ id, ...c }))
-    this.flagHashes = new Map(this.challenges.map((c) => [c.id, sha256(c.flag)]))
+    this.flagHashes = new Map(await Promise.all(this.challenges.map(async (c) => [c.id, await sha256(c.flag)])))
     this.labFlags = new Map(this.challenges.map((c) => [c.id, c.flag]))
     for (const c of this.challenges) delete c.flag
     this.seed = data.seed ?? {}
@@ -52,7 +60,7 @@ export class MockCTFEngineAdapter extends CTFEngineAdapter {
     await new Promise((r) => setTimeout(r, this.latencyMs))
     const expected = this.flagHashes.get(challengeId)
     if (!expected) return { correct: false }
-    return { correct: timingSafeEqual(expected, sha256(submission)) }
+    return { correct: digestEqual(expected, await sha256(submission)) }
   }
 
   async startInstance({ challengeId }) {

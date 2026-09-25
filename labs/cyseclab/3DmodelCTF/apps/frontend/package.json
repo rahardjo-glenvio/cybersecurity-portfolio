@@ -6,11 +6,15 @@
   "description": "Viewer 3D + overview + LAB panel. Tidak menghitung progression sendiri.",
   "scripts": {
     "dev": "vite",
+    "dev:standalone": "vite --mode standalone",
     "build": "vite build",
+    "build:standalone": "vite build --mode standalone",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lab/game-engine": "*",
     "@lab/shared": "*",
+    "@lab/telemetry": "*",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.8.1",
     "@react-three/postprocessing": "^3.1.2",
